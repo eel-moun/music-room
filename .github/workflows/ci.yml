@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    # Same images as docker-compose.yml. Unused by today's tests (all mocked),
+    # ready for the DB/Redis tests from Day 2.
+    services:
+      postgres:
+        image: postgres:18.6-alpine
+        env:
+          POSTGRES_USER: musicroom
+          POSTGRES_PASSWORD: musicroom
+          POSTGRES_DB: musicroom
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U musicroom"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      redis:
+        image: redis:8.8.4-alpine
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      POSTGRES_HOST: localhost
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.3.0
+      - run: uv sync --frozen
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest -q
