@@ -52,12 +52,13 @@ music-room/
 | 0:00–0:45 | Repo layout, `.gitignore`, `.env.example`, `Makefile` (`up`, `down`, `test`, `migrate`, `lint`, `logs`) | 🤖 |
 | 0:45–1:30 | `docker-compose.yml`: api, postgres, redis, mailpit, with healthchecks and volumes | 🧠 |
 | 1:30–2:15 | FastAPI skeleton: pydantic-settings config, async SQLAlchemy 2 + asyncpg, Alembic, `/health`, structlog JSON logs | 🤖 |
-| 2:15–3:45 | **Spike: music.** Audius key → `MusicProvider` protocol + `AudiusProvider.search()` / `get_stream_url()` → Expo app plays one track on your phone. **Exit rule: 2h max, otherwise switch to Jamendo.** | 🧠 adapter · 🤖 Expo shell |
-| 3:45–5:15 | **Spike: realtime.** FastAPI WebSocket + Redis pub/sub, run with **2 uvicorn workers**, prove a message from worker A reaches a client on worker B | 🧠 (Redis learning) |
-| 5:15–6:00 | GitHub Actions: ruff + pytest (with Postgres/Redis service containers) + mobile typecheck. ADR-001 (stack), ADR-002 (music provider), ADR-003 (REST + WS) | 🤖 CI · 🧠 ADRs |
+| 2:15–3:45 | **Spike: music.** Audius key → `MusicProvider` protocol + `AudiusProvider.search()` / `get_stream_url()` + `/music/*` routes → verified on the PC (Swagger + the stream URL plays in a browser). **Exit rule: 2h max, otherwise switch to Jamendo.** | 🧠 |
+| 3:45–5:15 | **Spike: realtime.** FastAPI WebSocket + Redis pub/sub, run with **2 uvicorn workers** (`make prod-up`), prove a message from worker A reaches a client on worker B, using 2 command-line/Python clients on the PC | 🧠 (Redis learning) |
+| 5:15–6:00 | GitHub Actions: ruff + pytest (with Postgres/Redis service containers). ADR-001 (stack), ADR-002 (music provider), ADR-003 (REST + WS) | 🤖 CI · 🧠 ADRs |
 
-**Done when:** `make up` starts everything from a clean clone · a track plays on the phone · a cross-worker WS message works · CI is green.
-**You learn:** Redis basics (data types, pub/sub), Expo basics.
+**Done when:** `make up` starts everything from a clean clone · a track plays in the PC browser from our API · a cross-worker WS message works · CI is green.
+**You learn:** Redis basics (data types, pub/sub).
+**Deferred to Day 3:** everything phone-related (LAN access, Expo shell, playback on device). Install Node LTS, Android platform-tools and Expo Go before Day 3.
 
 ---
 
@@ -83,6 +84,7 @@ music-room/
 |---|---|---|
 | 0:00–1:15 | Profiles: public / friends-only / private fields + music preferences (JSONB). Friendship requests (send, accept, decline, remove). Response filtering by viewer relationship. | 🧠 visibility logic · 🤖 CRUD |
 | 1:15–1:45 | Generate a typed TS client from FastAPI's OpenAPI (`openapi-typescript`) — the contract between backend and app | 🤖 |
+| — | **First phone session (deferred from Day 1):** phone reaches `http://<LAN-IP>:8000/health`; Expo shell runs on the Android phone (dev build) and the iPhone (Expo Go); a track from `/music/*` plays on both. Absorbs ~1h, taken from the screens block below. | 🤖 shell · 🧠 device setup |
 | 1:45–3:00 | Mobile core: expo-router structure, API client, auth store with **expo-secure-store**, automatic token refresh, **configurable backend URL** settings screen, device-info headers | 🧠 refresh logic · 🤖 rest |
 | 3:00–4:00 | Google Sign-In on mobile (needs an Expo **development build**) | 🧠 |
 | 4:00–6:00 | Screens: login, register, forgot password, profile (view/edit), friends, settings | 🤖 |

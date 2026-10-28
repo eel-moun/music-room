@@ -26,6 +26,7 @@ Music Room: a collaborative music mobile app built from the subject in `musicroo
 - **Realtime:** FastAPI WebSocket; events fanned out across workers via Redis pub/sub.
 - **Mobile:** React Native with Expo (development build, needed for Google Sign-In), expo-router, expo-secure-store for tokens, typed API client generated from FastAPI's OpenAPI.
   - **Cross-platform code (Android + iOS)**: no Android-only or iOS-only APIs without a `Platform` fallback; use safe areas; per-platform config (Google OAuth client IDs, iOS background audio, location permission strings) lives in the Expo app config.
+  - **Days 1–2: no phone work.** Verify everything on the PC (Swagger, browser, CLI/Python clients). Phone testing starts on Day 3.
   - **Validation happens on a physical Android phone** (dev build via `npx expo run:android`; the dev machine is Linux). Occasional checks on a **physical iPhone via Expo Go** (no Mac / no paid Apple account).
   - **Keep the app Expo Go-compatible**: Google Sign-In's native module isn't in Expo Go, so load it only when available and hide the Google button otherwise (iOS checks use email login). Don't add other native modules that Expo Go lacks without discussing it.
   - Phones reach the backend via the PC's LAN IP (`http://192.168.x.x:8000`), set in the app's backend-URL settings.
@@ -72,6 +73,9 @@ Run `make help` for the full list. Main targets (run from the repo root; most ex
 - `make migrate` / `make revision m="msg"`: apply / autogenerate Alembic migrations
 - `make test` / `make lint` / `make format`: pytest, ruff check + format check, auto-format
 - `make psql` / `make redis-cli` / `make shell`: open a client inside the containers
+- `make prod-up` / `make prod-down` / `make prod-logs`: production-like stack from `docker-compose.prod.yml` (needs a gitignored `.env.prod`)
 - `make mobile-install` / `make mobile`: install mobile deps, start Expo
+
+Compose notes: dev runs 1 worker with `--reload` (code mounted); prod runs the Dockerfile CMD with 2 workers, no published DB/Redis ports, memory limits only (this host's kernel rejects `cpus` limits). Dev Redis is published on host port **6380** because a host `redis-server` already uses 6379.
 
 Backend without Docker (from `backend/`): `uv run pytest`, `uv run ruff check .`. The API container runs `uvicorn ... --workers 2` on purpose (cross-worker realtime must be tested).

@@ -2,7 +2,7 @@
 COMPOSE := docker compose
 API := $(COMPOSE) exec api
 
-.PHONY: help env up down restart logs ps migrate revision test lint format shell psql redis-cli mobile-install mobile
+.PHONY: help env up down restart logs ps migrate revision test lint format shell psql redis-cli prod-up prod-down prod-logs mobile-install mobile
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -50,6 +50,18 @@ psql: ## Open psql on the database
 
 redis-cli: ## Open redis-cli
 	$(COMPOSE) exec redis redis-cli
+
+PROD := docker compose -f docker-compose.prod.yml
+
+prod-up: ## Start the production-like stack (needs .env.prod)
+	@test -f .env.prod || (echo "Missing .env.prod — copy .env.example and set real secrets" && exit 1)
+	$(PROD) up -d --build
+
+prod-down: ## Stop the production-like stack
+	$(PROD) down
+
+prod-logs: ## Follow production API logs
+	$(PROD) logs -f api
 
 mobile-install: ## Install mobile dependencies
 	cd mobile && npm install

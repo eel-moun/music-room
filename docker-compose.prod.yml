@@ -1,0 +1,71 @@
+# Production-like stack: baked image, 2 workers, no debug ports, resource limits.
+# Used for cross-worker realtime tests and load testing.
+# Usage: make prod-up   (needs .env.prod — gitignored, real secrets, real SMTP)
+name: musicroom-prod
+
+x-defaults: &defaults
+  restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  api:
+    <<: *defaults
+    build: ./backend # no code volume, no --reload: runs the Dockerfile CMD (2 workers)
+    env_file: .env.prod
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    deploy:
+      resources:
+        # cpus limits are not supported by this host kernel (no CFS cgroup), so memory only.
+        limits: # state these in docs/LOAD_TEST.md (subject V.7: server characteristics)
+          memory: 1G
+
+  postgres:
+    <<: *defaults
+    image: postgres:18.6-alpine
+    env_file: .env.prod
+    # no published port: only reachable from the api on the internal network
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  redis:
+    <<: *defaults
+    image: redis:8.8.4-alpine
+    # no published port
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  # no mailpit: SMTP_* in .env.prod points to a real provider
+
+volumes:
+  pgdata:
