@@ -25,6 +25,12 @@ class AudiusProvider:
         # Filtering happens after the limit, so a page can hold fewer than `limit` tracks.
         return [_to_track_info(t) for t in tracks if _is_playable(t)]
 
+    async def get_track(self, external_id: str) -> TrackInfo:
+        track = await self._get(f"/tracks/{external_id}", {})
+        if not _is_playable(track):
+            raise TrackNotFoundError(f"Audius: track {external_id} is not playable")
+        return _to_track_info(track)
+
     async def get_stream_url(self, external_id: str) -> str:
         # no_redirect=true returns the signed URL as JSON instead of a 302.
         # The URL is signed with a timestamp: fetch it on demand, never store it.

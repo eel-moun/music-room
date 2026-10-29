@@ -3,7 +3,7 @@
 **Format:** 7 build days × 6h, then 3 review days.
 **Scope:** all 3 services (Track Vote, Playlist Editor, Control Delegation), Google login only, mandatory part only.
 **Stack:** FastAPI (REST) · PostgreSQL · Redis · Docker Compose · React Native (Expo) · Loki + Alloy + Grafana + Prometheus · k6 · GitHub Actions.
-**Music:** Audius (primary) behind a `MusicProvider` adapter, Jamendo as fallback.
+**Music:** Audius behind a `MusicProvider` adapter (Jamendo dropped on Day 1: Audius worked).
 
 **Who does what**
 - **You:** architecture, data model, every concurrency/security-critical path, every ADR. You must be able to explain every line.
@@ -13,6 +13,23 @@
 **Overflow rule:** anything unfinished on day N moves to the review days, never into day N+1's critical path. If a day runs over, cut in this order: Prometheus → Grafana dashboards polish → UI polish. **Never** cut security, logging of actions, load testing, or any service.
 
 ---
+
+## Status (2026-10-29, Day 2)
+
+On Day 2 the user delegated the rest of the build to Claude. **Days 2–7 are built and verified on the PC:**
+- **Backend:** auth (email + Google + linking), profiles and friends, policies, the 3 services, realtime v2. 152 tests pass, including concurrency and IDOR tests.
+- **Observability:** Loki/Alloy/Prometheus/Grafana, data checked end to end.
+- **Load tests:** k6, ~800 simultaneous users on 2 workers (`docs/LOAD_TEST.md`).
+- **Security docs:** `docs/SECURITY.md`; ADR drafts 001–008.
+- **Mobile app:** every screen; tsc, lint, `expo export` and `expo-doctor` pass. **Not yet run on a phone.**
+
+New plan for the remaining days:
+1. **Phone validation** (Day 3 task): Node 24 + adb + Expo Go installed, dev build on Android, Expo Go on iPhone, the full scenario of each service on real devices; fix what breaks.
+2. **Google Cloud setup** (only the user can do it): OAuth client ids (web + Android with the debug SHA-1 + iOS), then fill `.env` / `mobile/.env`.
+3. **Review and rewrite** (the subject's AI rules): go through `docs/AI_USAGE.md` line by line. Claude explains, the user rewrites the critical parts themselves (token rotation, rate limiting, policies, vote/playlist concurrency, realtime rooms) and ticks the "Reviewed" column. Rewrite the ADRs in the user's own words.
+4. **Defense rehearsal** (Day 10 as planned).
+
+Each day below still lists what each part covers, and what to learn from it during the review.
 
 ## Repo layout (target)
 
@@ -25,7 +42,7 @@ music-room/
 │   │   ├── users/      profiles, friends
 │   │   ├── policies/   visibility + license checks (shared)
 │   │   ├── realtime/   WebSocket rooms + Redis pub/sub (shared)
-│   │   ├── music/      MusicProvider adapter (Audius, Jamendo)
+│   │   ├── music/      MusicProvider adapter (Audius)
 │   │   ├── votes/      Track Vote service
 │   │   ├── playlists/  Playlist Editor service
 │   │   └── delegation/ Control Delegation service

@@ -30,7 +30,7 @@ Music Room: a collaborative music mobile app built from the subject in `musicroo
   - **Validation happens on a physical Android phone** (dev build via `npx expo run:android`; the dev machine is Linux). Occasional checks on a **physical iPhone via Expo Go** (no Mac / no paid Apple account).
   - **Keep the app Expo Go-compatible**: Google Sign-In's native module isn't in Expo Go, so load it only when available and hide the Google button otherwise (iOS checks use email login). Don't add other native modules that Expo Go lacks without discussing it.
   - Phones reach the backend via the PC's LAN IP (`http://192.168.x.x:8000`), set in the app's backend-URL settings.
-- **Music:** Audius (primary) / Jamendo (fallback) behind a `MusicProvider` adapter. Store only track references (provider, external_id, title, artist, duration, artwork), never audio.
+- **Music:** Audius only (Jamendo dropped 2026-10-28) behind a `MusicProvider` adapter. Store only track references (provider, external_id, title, artist, duration, artwork), never audio; the server fetches metadata itself (`get_track`), clients send only `provider` + `external_id`.
 - **Observability:** structlog JSON logs → Grafana Alloy → Loki → Grafana; Prometheus metrics. Promtail is EOL — don't use it.
 - **Infra/CI:** Docker Compose, Makefile, mailpit for dev emails, GitHub Actions, k6 for load tests.
 - Rejected (don't reopen): GraphQL, pg_graphql, graph databases, Firebase, Spotify (5-user dev-mode cap), Deezer (new apps closed).
@@ -74,8 +74,16 @@ Run `make help` for the full list. Main targets (run from the repo root; most ex
 - `make test` / `make lint` / `make format`: pytest, ruff check + format check, auto-format
 - `make psql` / `make redis-cli` / `make shell`: open a client inside the containers
 - `make prod-up` / `make prod-down` / `make prod-logs`: production-like stack from `docker-compose.prod.yml` (needs a gitignored `.env.prod`)
-- `make mobile-install` / `make mobile`: install mobile deps, start Expo
+- `make obs-up`: prod stack + Loki/Alloy/Prometheus/Grafana (Grafana on localhost:3000, dashboard "Music Room API")
+- `make seed n=200` / `make loadtest-tokens n=500` / `make loadtest s=mixed|stress args="-e VUS=800"`: load-test users, k6 (in Docker, on the prod network)
+- `make check-realtime`: end-to-end WebSocket check across the 2 prod workers (needs `make seed`)
+- `make mobile-api`: regenerate `mobile/src/api/schema.d.ts` from the backend OpenAPI (after any schema change)
+- `make mobile-check`: tsc + expo lint in Docker (host Node is v12, too old); `make mobile-install` / `make mobile`: local Expo (needs Node 24)
 
-Compose notes: dev runs 1 worker with `--reload` (code mounted); prod runs the Dockerfile CMD with 2 workers, no published DB/Redis ports, memory limits only (this host's kernel rejects `cpus` limits). Dev Redis is published on host port **6380** because a host `redis-server` already uses 6379.
+Compose notes: dev runs 1 worker with `--reload` (code mounted) as `user: root` (rootless Docker maps it to the host user, so generated files stay editable); prod runs `start.sh` (migrations, then uvicorn with `WEB_WORKERS`, default 2) as uid 10001, no published DB/Redis ports, memory limits only (this host's kernel rejects `cpus` limits). Dev and prod both publish port 8000: stop one before starting the other (`make down` / `make prod-down`), and if the dev `api` container loses its network after switching, `docker compose up -d --force-recreate api`. Dev Redis is published on host port **6380** because a host `redis-server` already uses 6379. Docker is rootless: the socket is `/run/user/<uid>/docker.sock` (the Makefile exports `DOCKER_SOCK` for Alloy).
+
+Testing notes: `tests/conftest.py` points the app at `<db>_test` and Redis db 15, recreates the schema once per session (`create_all`) and truncates before each test; one event loop for the whole session. Fakes: `FakeProvider` (no Audius calls), `outbox` (captured emails), `google_accounts` (fake Google verifier). Run tests inside the stack (`make test`). Emails must use a real-looking domain (`example.com`): email-validator rejects `.local` / `.test`.
+
+Mobile notes: Expo SDK 58, newer than Claude's training data: follow `mobile/AGENTS.md` (fetch the v58 docs, use `npx expo install`). `Tabs` comes from `expo-router/js-tabs`; Expo Go detection is `isRunningInExpoGo()` from `expo`; React Compiler lint rules are on (no setState directly in effects, no ref writes during render: use `useFocusEffect` / `useEffectEvent`).
 
 Backend without Docker (from `backend/`): `uv run pytest`, `uv run ruff check .`. The API container runs `uvicorn ... --workers 2` on purpose (cross-worker realtime must be tested).

@@ -1,0 +1,52 @@
+# Observability, added on top of the prod stack (see `make obs-up`):
+#   API logs (JSON on stdout) → Alloy → Loki ┐
+#   API /metrics            → Prometheus    ├→ Grafana (http://localhost:3000)
+name: musicroom-prod
+
+services:
+  loki:
+    image: grafana/loki:3.7.8
+    # The image's bundled single-process config: local filesystem storage.
+    command: ["-config.file=/etc/loki/local-config.yaml"]
+    volumes:
+      - lokidata:/loki
+    restart: unless-stopped
+
+  alloy:
+    image: grafana/alloy:v1.20.1
+    command: ["run", "/etc/alloy/config.alloy", "--server.http.listen-addr=0.0.0.0:12345"]
+    volumes:
+      - ./infra/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      # Reads container logs through the Docker API. DOCKER_SOCK is set by the Makefile
+      # (rootless Docker keeps it under /run/user/<uid>).
+      - ${DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    depends_on: [loki]
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.15.0
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - promdata:/prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:13.2.4
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    volumes:
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafanadata:/var/lib/grafana
+    ports:
+      - "127.0.0.1:3000:3000" # localhost only
+    depends_on: [loki, prometheus]
+    restart: unless-stopped
+
+volumes:
+  lokidata:
+  promdata:
+  grafanadata:

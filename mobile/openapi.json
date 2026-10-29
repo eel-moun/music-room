@@ -1,0 +1,7562 @@
+{
+ "openapi": "3.1.0",
+ "info": {
+  "title": "Music Room API",
+  "description": "Backend of Music Room: Track Vote, Playlist Editor and Control Delegation.\n\nEvery app request must send `X-Platform`, `X-Device` and `X-App-Version`. Authenticate with **Authorize** using the `access_token` from `/auth/login`. Realtime updates: WebSocket `/ws` (protocol in the `realtime` section of the README).",
+  "version": "1.0.0"
+ },
+ "paths": {
+  "/auth/register": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Register",
+    "description": "Always answers the same way, so this endpoint can't be used to test which\nemails have an account. An existing user gets an email instead.",
+    "operationId": "register_auth_register_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RegisterIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/verify-email": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Verify Email",
+    "operationId": "verify_email_auth_verify_email_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/TokenIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/resend-verification": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Resend Verification",
+    "operationId": "resend_verification_auth_resend_verification_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EmailIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/login": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Login",
+    "operationId": "login_auth_login_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/LoginIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenPair"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/refresh": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Refresh",
+    "operationId": "refresh_auth_refresh_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RefreshIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenPair"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/logout": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Logout",
+    "operationId": "logout_auth_logout_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/RefreshIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/forgot-password": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Forgot Password",
+    "operationId": "forgot_password_auth_forgot_password_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EmailIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/reset-password": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Reset Password",
+    "operationId": "reset_password_auth_reset_password_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ResetPasswordIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/change-password": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Change Password",
+    "operationId": "change_password_auth_change_password_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ChangePasswordIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/google": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Google Login",
+    "description": "Log in with Google, or sign up if this Google account and its email are new.",
+    "operationId": "google_login_auth_google_post",
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GoogleIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/TokenPair"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/auth/google/link": {
+   "post": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Link Google",
+    "operationId": "link_google_auth_google_link_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/GoogleIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "auth"
+    ],
+    "summary": "Unlink Google",
+    "operationId": "unlink_google_auth_google_link_delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/Message"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/users/me": {
+   "get": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Get Me",
+    "operationId": "get_me_users_me_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MeOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Update Me",
+    "operationId": "update_me_users_me_patch",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/ProfileUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/MeOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/users": {
+   "get": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Search Users",
+    "operationId": "search_users_users_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 50,
+       "title": "Q"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/UserSummary"
+         },
+         "title": "Response Search Users Users Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/users/{user_id}": {
+   "get": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Get Profile",
+    "operationId": "get_profile_users__user_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "User Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/ProfileOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/friends": {
+   "get": {
+    "tags": [
+     "users"
+    ],
+    "summary": "List Friends",
+    "operationId": "list_friends_friends_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/FriendOut"
+         },
+         "title": "Response List Friends Friends Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/friends/requests": {
+   "get": {
+    "tags": [
+     "users"
+    ],
+    "summary": "List Friend Requests",
+    "operationId": "list_friend_requests_friends_requests_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/FriendRequestOut"
+         },
+         "title": "Response List Friend Requests Friends Requests Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Send Friend Request",
+    "operationId": "send_friend_request_friends_requests_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/FriendRequestIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FriendRequestOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/friends/requests/{request_id}/accept": {
+   "post": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Accept Friend Request",
+    "operationId": "accept_friend_request_friends_requests__request_id__accept_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "request_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Request Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/FriendRequestOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/friends/requests/{request_id}": {
+   "delete": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Delete Friend Request",
+    "description": "Decline (if it was sent to you) or cancel (if you sent it).",
+    "operationId": "delete_friend_request_friends_requests__request_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "request_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Request Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/friends/{user_id}": {
+   "delete": {
+    "tags": [
+     "users"
+    ],
+    "summary": "Remove Friend",
+    "operationId": "remove_friend_friends__user_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "User Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/music/search": {
+   "get": {
+    "tags": [
+     "music"
+    ],
+    "summary": "Search",
+    "operationId": "search_music_search_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "title": "Q"
+      }
+     },
+     {
+      "name": "limit",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "integer",
+       "maximum": 50,
+       "minimum": 1,
+       "default": 20,
+       "title": "Limit"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/TrackInfo"
+         },
+         "title": "Response Search Music Search Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/music/tracks/{track_id}/stream": {
+   "get": {
+    "tags": [
+     "music"
+    ],
+    "summary": "Stream Url",
+    "operationId": "stream_url_music_tracks__track_id__stream_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "track_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "pattern": "^[A-Za-z0-9]{1,32}$",
+       "title": "Track Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/StreamUrl"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events": {
+   "post": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Create Event",
+    "operationId": "create_event_events_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EventSettings"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EventOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "List Events",
+    "description": "Events the caller can see: public ones, their own, and private ones they're invited to.",
+    "operationId": "list_events_events_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "maxLength": 100
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Q"
+      }
+     },
+     {
+      "name": "mine",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Mine"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/EventOut"
+         },
+         "title": "Response List Events Events Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}": {
+   "get": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Get Event",
+    "operationId": "get_event_events__event_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EventOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Update Event",
+    "operationId": "update_event_events__event_id__patch",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/EventUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/EventOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Delete Event",
+    "operationId": "delete_event_events__event_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/invites": {
+   "get": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "List Invites",
+    "operationId": "list_invites_events__event_id__invites_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/UserSummary"
+         },
+         "title": "Response List Invites Events  Event Id  Invites Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Invite",
+    "operationId": "invite_events__event_id__invites_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/InviteIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/invites/{user_id}": {
+   "delete": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Uninvite",
+    "operationId": "uninvite_events__event_id__invites__user_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "User Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/queue": {
+   "get": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Queue",
+    "operationId": "queue_events__event_id__queue_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueueOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/tracks": {
+   "post": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Suggest Track",
+    "operationId": "suggest_track_events__event_id__tracks_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/SuggestIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueueOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/tracks/{track_id}/vote": {
+   "post": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Vote",
+    "description": "Idempotent: voting twice for the same track still counts once (enforced by\nUNIQUE(event_id, track_id, user_id), so it also holds for simultaneous requests).",
+    "operationId": "vote_events__event_id__tracks__track_id__vote_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "track_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Track Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/Position"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueueOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Unvote",
+    "operationId": "unvote_events__event_id__tracks__track_id__vote_delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "track_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Track Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueueOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/tracks/{track_id}": {
+   "delete": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Remove Track",
+    "description": "The owner can remove any queued track; a user can remove their own suggestion.",
+    "operationId": "remove_track_events__event_id__tracks__track_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "track_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Track Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/events/{event_id}/next": {
+   "post": {
+    "tags": [
+     "track vote"
+    ],
+    "summary": "Play Next",
+    "description": "Owner's player: the current track is marked played and the top-voted one starts.\n\nThe event row is locked (SELECT ... FOR UPDATE) so two \"next\" at once can't both\npick the same track or skip one.",
+    "operationId": "play_next_events__event_id__next_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "event_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Event Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/QueueOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists": {
+   "post": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Create Playlist",
+    "operationId": "create_playlist_playlists_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlaylistSettings"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlaylistDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "List Playlists",
+    "operationId": "list_playlists_playlists_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "q",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "anyOf": [
+        {
+         "type": "string",
+         "maxLength": 100
+        },
+        {
+         "type": "null"
+        }
+       ],
+       "title": "Q"
+      }
+     },
+     {
+      "name": "mine",
+      "in": "query",
+      "required": false,
+      "schema": {
+       "type": "boolean",
+       "default": false,
+       "title": "Mine"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/PlaylistOut"
+         },
+         "title": "Response List Playlists Playlists Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists/{playlist_id}": {
+   "get": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Get Playlist",
+    "operationId": "get_playlist_playlists__playlist_id__get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlaylistDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "patch": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Update Playlist",
+    "operationId": "update_playlist_playlists__playlist_id__patch",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/PlaylistUpdate"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlaylistDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Delete Playlist",
+    "operationId": "delete_playlist_playlists__playlist_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists/{playlist_id}/members": {
+   "get": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "List Members",
+    "operationId": "list_members_playlists__playlist_id__members_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/UserSummary"
+         },
+         "title": "Response List Members Playlists  Playlist Id  Members Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Add Member",
+    "operationId": "add_member_playlists__playlist_id__members_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MemberIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists/{playlist_id}/members/{user_id}": {
+   "delete": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Remove Member",
+    "operationId": "remove_member_playlists__playlist_id__members__user_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "user_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "User Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists/{playlist_id}/tracks": {
+   "post": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Add Track",
+    "operationId": "add_track_playlists__playlist_id__tracks_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/AddTrackIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlaylistDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists/{playlist_id}/tracks/{track_id}/move": {
+   "post": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Move Track",
+    "operationId": "move_track_playlists__playlist_id__tracks__track_id__move_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "track_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Track Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/MoveTrackIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlaylistDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/playlists/{playlist_id}/tracks/{track_id}": {
+   "delete": {
+    "tags": [
+     "playlist editor"
+    ],
+    "summary": "Remove Track",
+    "operationId": "remove_track_playlists__playlist_id__tracks__track_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "playlist_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Playlist Id"
+      }
+     },
+     {
+      "name": "track_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Track Id"
+      }
+     },
+     {
+      "name": "version",
+      "in": "query",
+      "required": true,
+      "schema": {
+       "type": "integer",
+       "minimum": 1,
+       "title": "Version"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/PlaylistDetail"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices": {
+   "post": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Register Device",
+    "description": "Called once per app install; the app keeps the returned id.",
+    "operationId": "register_device_devices_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DeviceIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DeviceOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "My Devices",
+    "operationId": "my_devices_devices_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/DeviceOut"
+         },
+         "title": "Response My Devices Devices Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices/controllable": {
+   "get": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Controllable Devices",
+    "description": "Friends' devices the caller currently holds a valid delegation for.",
+    "operationId": "controllable_devices_devices_controllable_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/ControllableDeviceOut"
+         },
+         "title": "Response Controllable Devices Devices Controllable Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices/{device_id}": {
+   "patch": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Rename Device",
+    "operationId": "rename_device_devices__device_id__patch",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DeviceRename"
+       }
+      }
+     }
+    },
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DeviceOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "delete": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Delete Device",
+    "operationId": "delete_device_devices__device_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices/{device_id}/delegations": {
+   "get": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "List Delegations",
+    "operationId": "list_delegations_devices__device_id__delegations_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "array",
+         "items": {
+          "$ref": "#/components/schemas/DelegationOut"
+         },
+         "title": "Response List Delegations Devices  Device Id  Delegations Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "post": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Grant",
+    "operationId": "grant_devices__device_id__delegations_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DelegationIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "201": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/DelegationOut"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices/{device_id}/delegations/{delegation_id}": {
+   "delete": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Revoke",
+    "operationId": "revoke_devices__device_id__delegations__delegation_id__delete",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "delegation_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Delegation Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices/{device_id}/commands": {
+   "post": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Send Command",
+    "description": "Checked against the license, then pushed to the device through its room.\n202: the device applies it and reports its new state.",
+    "operationId": "send_command_devices__device_id__commands_post",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/CommandIn"
+       }
+      }
+     }
+    },
+    "responses": {
+     "202": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "type": "object",
+         "additionalProperties": {
+          "type": "integer"
+         },
+         "title": "Response Send Command Devices  Device Id  Commands Post"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/devices/{device_id}/state": {
+   "put": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Report State",
+    "description": "Only the owner's device reports. State is ephemeral: Redis, not Postgres.",
+    "operationId": "report_state_devices__device_id__state_put",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "requestBody": {
+     "required": true,
+     "content": {
+      "application/json": {
+       "schema": {
+        "$ref": "#/components/schemas/DeviceState"
+       }
+      }
+     }
+    },
+    "responses": {
+     "204": {
+      "description": "Successful Response"
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   },
+   "get": {
+    "tags": [
+     "control delegation"
+    ],
+    "summary": "Get State",
+    "operationId": "get_state_devices__device_id__state_get",
+    "security": [
+     {
+      "HTTPBearer": []
+     }
+    ],
+    "parameters": [
+     {
+      "name": "device_id",
+      "in": "path",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "format": "uuid",
+       "title": "Device Id"
+      }
+     },
+     {
+      "name": "x-platform",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "android"
+       ],
+       "title": "X-Platform"
+      }
+     },
+     {
+      "name": "x-device",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 100,
+       "examples": [
+        "Pixel 7"
+       ],
+       "title": "X-Device"
+      }
+     },
+     {
+      "name": "x-app-version",
+      "in": "header",
+      "required": true,
+      "schema": {
+       "type": "string",
+       "minLength": 1,
+       "maxLength": 20,
+       "examples": [
+        "1.0.0"
+       ],
+       "title": "X-App-Version"
+      }
+     }
+    ],
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "anyOf": [
+          {
+           "$ref": "#/components/schemas/DeviceState"
+          },
+          {
+           "type": "null"
+          }
+         ],
+         "title": "Response Get State Devices  Device Id  State Get"
+        }
+       }
+      }
+     },
+     "422": {
+      "description": "Validation Error",
+      "content": {
+       "application/json": {
+        "schema": {
+         "$ref": "#/components/schemas/HTTPValidationError"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "/health": {
+   "get": {
+    "tags": [
+     "system"
+    ],
+    "summary": "Health",
+    "operationId": "health_health_get",
+    "responses": {
+     "200": {
+      "description": "Successful Response",
+      "content": {
+       "application/json": {
+        "schema": {
+         "additionalProperties": {
+          "type": "string"
+         },
+         "type": "object",
+         "title": "Response Health Health Get"
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ },
+ "components": {
+  "schemas": {
+   "AddTrackIn": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "const": "audius",
+      "title": "Provider",
+      "default": "audius"
+     },
+     "external_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{1,32}$",
+      "title": "External Id"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Version",
+      "description": "The playlist version the client last saw"
+     }
+    },
+    "type": "object",
+    "required": [
+     "external_id",
+     "version"
+    ],
+    "title": "AddTrackIn"
+   },
+   "ChangePasswordIn": {
+    "properties": {
+     "current_password": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 128
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Current Password",
+      "description": "Omit only if the account has no password yet"
+     },
+     "new_password": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 8,
+      "title": "New Password"
+     }
+    },
+    "type": "object",
+    "required": [
+     "new_password"
+    ],
+    "title": "ChangePasswordIn"
+   },
+   "CommandIn": {
+    "properties": {
+     "command": {
+      "type": "string",
+      "enum": [
+       "play",
+       "pause",
+       "next",
+       "previous",
+       "play_track",
+       "play_playlist",
+       "set_volume"
+      ],
+      "title": "Command"
+     },
+     "track": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TrackRefIn"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "playlist_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "uuid"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Playlist Id"
+     },
+     "volume": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 100.0,
+        "minimum": 0.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Volume"
+     }
+    },
+    "type": "object",
+    "required": [
+     "command"
+    ],
+    "title": "CommandIn"
+   },
+   "ControllableDeviceOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "platform": {
+      "type": "string",
+      "title": "Platform"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "last_seen_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Seen At"
+     },
+     "owner": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "permissions": {
+      "items": {
+       "type": "string",
+       "enum": [
+        "playback",
+        "volume"
+       ]
+      },
+      "type": "array",
+      "title": "Permissions"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "platform",
+     "created_at",
+     "last_seen_at",
+     "owner",
+     "permissions",
+     "expires_at"
+    ],
+    "title": "ControllableDeviceOut"
+   },
+   "DelegationIn": {
+    "properties": {
+     "grantee_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Grantee Id"
+     },
+     "permissions": {
+      "items": {
+       "type": "string",
+       "enum": [
+        "playback",
+        "volume"
+       ]
+      },
+      "type": "array",
+      "minItems": 1,
+      "title": "Permissions"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "grantee_id",
+     "permissions"
+    ],
+    "title": "DelegationIn"
+   },
+   "DelegationOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "device_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Device Id"
+     },
+     "grantee": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "permissions": {
+      "items": {
+       "type": "string",
+       "enum": [
+        "playback",
+        "volume"
+       ]
+      },
+      "type": "array",
+      "title": "Permissions"
+     },
+     "expires_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Expires At"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "device_id",
+     "grantee",
+     "permissions",
+     "expires_at",
+     "created_at"
+    ],
+    "title": "DelegationOut"
+   },
+   "DeviceIn": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "platform": {
+      "type": "string",
+      "maxLength": 20,
+      "minLength": 1,
+      "title": "Platform"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "platform"
+    ],
+    "title": "DeviceIn"
+   },
+   "DeviceOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "name": {
+      "type": "string",
+      "title": "Name"
+     },
+     "platform": {
+      "type": "string",
+      "title": "Platform"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "last_seen_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Seen At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "name",
+     "platform",
+     "created_at",
+     "last_seen_at"
+    ],
+    "title": "DeviceOut"
+   },
+   "DeviceRename": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "DeviceRename"
+   },
+   "DeviceState": {
+    "properties": {
+     "is_playing": {
+      "type": "boolean",
+      "title": "Is Playing"
+     },
+     "track": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/TrackInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "playlist_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "uuid"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Playlist Id"
+     },
+     "position_s": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Position S",
+      "default": 0
+     },
+     "volume": {
+      "type": "integer",
+      "maximum": 100.0,
+      "minimum": 0.0,
+      "title": "Volume"
+     }
+    },
+    "type": "object",
+    "required": [
+     "is_playing",
+     "volume"
+    ],
+    "title": "DeviceState",
+    "description": "Reported by the device itself after each change; relayed to its controllers."
+   },
+   "EmailIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email"
+    ],
+    "title": "EmailIn"
+   },
+   "EventLicense": {
+    "type": "string",
+    "enum": [
+     "everyone",
+     "invited",
+     "location_time"
+    ],
+    "title": "EventLicense"
+   },
+   "EventOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Description",
+      "default": ""
+     },
+     "visibility": {
+      "$ref": "#/components/schemas/Visibility",
+      "default": "public"
+     },
+     "license": {
+      "$ref": "#/components/schemas/EventLicense",
+      "default": "everyone"
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 50000.0,
+        "minimum": 10.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M"
+     },
+     "starts_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Starts At"
+     },
+     "ends_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ends At"
+     },
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "owner": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "is_owner": {
+      "type": "boolean",
+      "title": "Is Owner"
+     },
+     "is_invited": {
+      "type": "boolean",
+      "title": "Is Invited"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "id",
+     "owner",
+     "created_at",
+     "is_owner",
+     "is_invited"
+    ],
+    "title": "EventOut"
+   },
+   "EventSettings": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Description",
+      "default": ""
+     },
+     "visibility": {
+      "$ref": "#/components/schemas/Visibility",
+      "default": "public"
+     },
+     "license": {
+      "$ref": "#/components/schemas/EventLicense",
+      "default": "everyone"
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "integer",
+        "maximum": 50000.0,
+        "minimum": 10.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M"
+     },
+     "starts_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Starts At"
+     },
+     "ends_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ends At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "EventSettings"
+   },
+   "EventUpdate": {
+    "properties": {
+     "name": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "visibility": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Visibility"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "license": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/EventLicense"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "radius_m": {
+      "anyOf": [
+       {
+        "type": "integer"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Radius M"
+     },
+     "starts_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Starts At"
+     },
+     "ends_at": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Ends At"
+     }
+    },
+    "type": "object",
+    "title": "EventUpdate",
+    "description": "Fields to change; the merged result is validated like a new event."
+   },
+   "FriendOut": {
+    "properties": {
+     "user": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "since": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date-time"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Since"
+     }
+    },
+    "type": "object",
+    "required": [
+     "user",
+     "since"
+    ],
+    "title": "FriendOut"
+   },
+   "FriendRequestIn": {
+    "properties": {
+     "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "User Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "user_id"
+    ],
+    "title": "FriendRequestIn"
+   },
+   "FriendRequestOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "status": {
+      "$ref": "#/components/schemas/FriendshipStatus"
+     },
+     "direction": {
+      "type": "string",
+      "title": "Direction",
+      "description": "'incoming' or 'outgoing'"
+     },
+     "user": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "status",
+     "direction",
+     "user",
+     "created_at"
+    ],
+    "title": "FriendRequestOut"
+   },
+   "FriendsInfo": {
+    "properties": {
+     "first_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "First Name"
+     },
+     "last_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Last Name"
+     },
+     "city": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "City"
+     }
+    },
+    "type": "object",
+    "title": "FriendsInfo",
+    "description": "Seen by friends only."
+   },
+   "FriendshipStatus": {
+    "type": "string",
+    "enum": [
+     "pending",
+     "accepted"
+    ],
+    "title": "FriendshipStatus"
+   },
+   "GoogleIn": {
+    "properties": {
+     "id_token": {
+      "type": "string",
+      "maxLength": 4096,
+      "title": "Id Token"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id_token"
+    ],
+    "title": "GoogleIn"
+   },
+   "HTTPValidationError": {
+    "properties": {
+     "detail": {
+      "items": {
+       "$ref": "#/components/schemas/ValidationError"
+      },
+      "type": "array",
+      "title": "Detail"
+     }
+    },
+    "type": "object",
+    "title": "HTTPValidationError"
+   },
+   "InviteIn": {
+    "properties": {
+     "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "User Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "user_id"
+    ],
+    "title": "InviteIn"
+   },
+   "LoginIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 128,
+      "title": "Password"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password"
+    ],
+    "title": "LoginIn"
+   },
+   "MeOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     },
+     "relation": {
+      "type": "string",
+      "title": "Relation"
+     },
+     "public_info": {
+      "$ref": "#/components/schemas/PublicInfo"
+     },
+     "music_preferences": {
+      "$ref": "#/components/schemas/MusicPreferences"
+     },
+     "friends_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FriendsInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "private_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/PrivateInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "email": {
+      "type": "string",
+      "title": "Email"
+     },
+     "email_verified": {
+      "type": "boolean",
+      "title": "Email Verified"
+     },
+     "has_password": {
+      "type": "boolean",
+      "title": "Has Password"
+     },
+     "google_linked": {
+      "type": "boolean",
+      "title": "Google Linked"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "display_name",
+     "relation",
+     "public_info",
+     "music_preferences",
+     "friends_info",
+     "private_info",
+     "email",
+     "email_verified",
+     "has_password",
+     "google_linked"
+    ],
+    "title": "MeOut"
+   },
+   "MemberIn": {
+    "properties": {
+     "user_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "User Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "user_id"
+    ],
+    "title": "MemberIn"
+   },
+   "Message": {
+    "properties": {
+     "message": {
+      "type": "string",
+      "title": "Message"
+     }
+    },
+    "type": "object",
+    "required": [
+     "message"
+    ],
+    "title": "Message"
+   },
+   "MoveTrackIn": {
+    "properties": {
+     "after_track_id": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "uuid"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "After Track Id",
+      "description": "Place the track right after this one; null moves it to the top"
+     },
+     "version": {
+      "type": "integer",
+      "minimum": 1.0,
+      "title": "Version",
+      "description": "The playlist version the client last saw"
+     }
+    },
+    "type": "object",
+    "required": [
+     "after_track_id",
+     "version"
+    ],
+    "title": "MoveTrackIn"
+   },
+   "MusicPreferences": {
+    "properties": {
+     "genres": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "title": "Genres"
+     },
+     "favorite_artists": {
+      "items": {
+       "type": "string"
+      },
+      "type": "array",
+      "maxItems": 20,
+      "title": "Favorite Artists"
+     }
+    },
+    "type": "object",
+    "title": "MusicPreferences"
+   },
+   "PlaylistDetail": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Description",
+      "default": ""
+     },
+     "visibility": {
+      "$ref": "#/components/schemas/Visibility",
+      "default": "public"
+     },
+     "license": {
+      "$ref": "#/components/schemas/PlaylistLicense",
+      "default": "everyone"
+     },
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "owner": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "version": {
+      "type": "integer",
+      "title": "Version"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+     },
+     "is_owner": {
+      "type": "boolean",
+      "title": "Is Owner"
+     },
+     "is_invited": {
+      "type": "boolean",
+      "title": "Is Invited"
+     },
+     "can_edit": {
+      "type": "boolean",
+      "title": "Can Edit"
+     },
+     "tracks": {
+      "items": {
+       "$ref": "#/components/schemas/PlaylistTrackOut"
+      },
+      "type": "array",
+      "title": "Tracks"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "id",
+     "owner",
+     "version",
+     "created_at",
+     "updated_at",
+     "is_owner",
+     "is_invited",
+     "can_edit",
+     "tracks"
+    ],
+    "title": "PlaylistDetail"
+   },
+   "PlaylistLicense": {
+    "type": "string",
+    "enum": [
+     "everyone",
+     "invited"
+    ],
+    "title": "PlaylistLicense"
+   },
+   "PlaylistOut": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Description",
+      "default": ""
+     },
+     "visibility": {
+      "$ref": "#/components/schemas/Visibility",
+      "default": "public"
+     },
+     "license": {
+      "$ref": "#/components/schemas/PlaylistLicense",
+      "default": "everyone"
+     },
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "owner": {
+      "$ref": "#/components/schemas/UserSummary"
+     },
+     "version": {
+      "type": "integer",
+      "title": "Version"
+     },
+     "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Created At"
+     },
+     "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Updated At"
+     },
+     "is_owner": {
+      "type": "boolean",
+      "title": "Is Owner"
+     },
+     "is_invited": {
+      "type": "boolean",
+      "title": "Is Invited"
+     },
+     "can_edit": {
+      "type": "boolean",
+      "title": "Can Edit"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name",
+     "id",
+     "owner",
+     "version",
+     "created_at",
+     "updated_at",
+     "is_owner",
+     "is_invited",
+     "can_edit"
+    ],
+    "title": "PlaylistOut"
+   },
+   "PlaylistSettings": {
+    "properties": {
+     "name": {
+      "type": "string",
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Name"
+     },
+     "description": {
+      "type": "string",
+      "maxLength": 2000,
+      "title": "Description",
+      "default": ""
+     },
+     "visibility": {
+      "$ref": "#/components/schemas/Visibility",
+      "default": "public"
+     },
+     "license": {
+      "$ref": "#/components/schemas/PlaylistLicense",
+      "default": "everyone"
+     }
+    },
+    "type": "object",
+    "required": [
+     "name"
+    ],
+    "title": "PlaylistSettings"
+   },
+   "PlaylistTrackOut": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "const": "audius",
+      "title": "Provider"
+     },
+     "external_id": {
+      "type": "string",
+      "title": "External Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "artist": {
+      "type": "string",
+      "title": "Artist"
+     },
+     "duration": {
+      "type": "integer",
+      "title": "Duration"
+     },
+     "artwork_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Artwork Url"
+     },
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "added_by": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "uuid"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Added By"
+     },
+     "added_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Added At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "provider",
+     "external_id",
+     "title",
+     "artist",
+     "duration",
+     "artwork_url",
+     "id",
+     "added_by",
+     "added_at"
+    ],
+    "title": "PlaylistTrackOut"
+   },
+   "PlaylistUpdate": {
+    "properties": {
+     "name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 100,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Name"
+     },
+     "description": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 2000
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Description"
+     },
+     "visibility": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/Visibility"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "license": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/PlaylistLicense"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "title": "PlaylistUpdate"
+   },
+   "Position": {
+    "properties": {
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     }
+    },
+    "type": "object",
+    "title": "Position",
+    "description": "The caller's GPS position, needed for location_time events."
+   },
+   "PrivateInfo": {
+    "properties": {
+     "phone": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 30
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Phone"
+     },
+     "birth_date": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "date"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Birth Date"
+     }
+    },
+    "type": "object",
+    "title": "PrivateInfo",
+    "description": "Seen by the user only."
+   },
+   "ProfileOut": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     },
+     "relation": {
+      "type": "string",
+      "title": "Relation"
+     },
+     "public_info": {
+      "$ref": "#/components/schemas/PublicInfo"
+     },
+     "music_preferences": {
+      "$ref": "#/components/schemas/MusicPreferences"
+     },
+     "friends_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FriendsInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "private_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/PrivateInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "display_name",
+     "relation",
+     "public_info",
+     "music_preferences",
+     "friends_info",
+     "private_info"
+    ],
+    "title": "ProfileOut",
+    "description": "Blocks the viewer may not see are null."
+   },
+   "ProfileUpdate": {
+    "properties": {
+     "display_name": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 50,
+        "minLength": 1
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Display Name"
+     },
+     "public_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/PublicInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "friends_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/FriendsInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "private_info": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/PrivateInfo"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "music_preferences": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/MusicPreferences"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     }
+    },
+    "type": "object",
+    "title": "ProfileUpdate",
+    "description": "Each block given replaces the stored one entirely."
+   },
+   "PublicInfo": {
+    "properties": {
+     "bio": {
+      "type": "string",
+      "maxLength": 500,
+      "title": "Bio",
+      "default": ""
+     },
+     "avatar_url": {
+      "anyOf": [
+       {
+        "type": "string",
+        "maxLength": 500
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Avatar Url"
+     }
+    },
+    "type": "object",
+    "title": "PublicInfo",
+    "description": "Seen by everyone."
+   },
+   "QueueOut": {
+    "properties": {
+     "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Event Id"
+     },
+     "now_playing": {
+      "anyOf": [
+       {
+        "$ref": "#/components/schemas/QueueTrackOut"
+       },
+       {
+        "type": "null"
+       }
+      ]
+     },
+     "queue": {
+      "items": {
+       "$ref": "#/components/schemas/QueueTrackOut"
+      },
+      "type": "array",
+      "title": "Queue",
+      "description": "Ranked: votes desc, then oldest suggestion"
+     }
+    },
+    "type": "object",
+    "required": [
+     "event_id",
+     "now_playing",
+     "queue"
+    ],
+    "title": "QueueOut"
+   },
+   "QueueTrackOut": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "const": "audius",
+      "title": "Provider"
+     },
+     "external_id": {
+      "type": "string",
+      "title": "External Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "artist": {
+      "type": "string",
+      "title": "Artist"
+     },
+     "duration": {
+      "type": "integer",
+      "title": "Duration"
+     },
+     "artwork_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Artwork Url"
+     },
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "votes": {
+      "type": "integer",
+      "title": "Votes"
+     },
+     "voted_by_me": {
+      "anyOf": [
+       {
+        "type": "boolean"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Voted By Me",
+      "description": "null in realtime pushes (they're shared by every viewer)"
+     },
+     "suggested_by": {
+      "anyOf": [
+       {
+        "type": "string",
+        "format": "uuid"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Suggested By"
+     },
+     "suggested_at": {
+      "type": "string",
+      "format": "date-time",
+      "title": "Suggested At"
+     }
+    },
+    "type": "object",
+    "required": [
+     "provider",
+     "external_id",
+     "title",
+     "artist",
+     "duration",
+     "artwork_url",
+     "id",
+     "votes",
+     "voted_by_me",
+     "suggested_by",
+     "suggested_at"
+    ],
+    "title": "QueueTrackOut"
+   },
+   "RefreshIn": {
+    "properties": {
+     "refresh_token": {
+      "type": "string",
+      "maxLength": 100,
+      "title": "Refresh Token"
+     }
+    },
+    "type": "object",
+    "required": [
+     "refresh_token"
+    ],
+    "title": "RefreshIn"
+   },
+   "RegisterIn": {
+    "properties": {
+     "email": {
+      "type": "string",
+      "format": "email",
+      "title": "Email"
+     },
+     "password": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 8,
+      "title": "Password"
+     },
+     "display_name": {
+      "type": "string",
+      "maxLength": 50,
+      "minLength": 1,
+      "title": "Display Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "email",
+     "password",
+     "display_name"
+    ],
+    "title": "RegisterIn"
+   },
+   "ResetPasswordIn": {
+    "properties": {
+     "token": {
+      "type": "string",
+      "maxLength": 100,
+      "title": "Token"
+     },
+     "new_password": {
+      "type": "string",
+      "maxLength": 128,
+      "minLength": 8,
+      "title": "New Password"
+     }
+    },
+    "type": "object",
+    "required": [
+     "token",
+     "new_password"
+    ],
+    "title": "ResetPasswordIn"
+   },
+   "StreamUrl": {
+    "properties": {
+     "url": {
+      "type": "string",
+      "title": "Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "url"
+    ],
+    "title": "StreamUrl"
+   },
+   "SuggestIn": {
+    "properties": {
+     "latitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 90.0,
+        "minimum": -90.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Latitude"
+     },
+     "longitude": {
+      "anyOf": [
+       {
+        "type": "number",
+        "maximum": 180.0,
+        "minimum": -180.0
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Longitude"
+     },
+     "provider": {
+      "type": "string",
+      "const": "audius",
+      "title": "Provider",
+      "default": "audius"
+     },
+     "external_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{1,32}$",
+      "title": "External Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "external_id"
+    ],
+    "title": "SuggestIn"
+   },
+   "TokenIn": {
+    "properties": {
+     "token": {
+      "type": "string",
+      "maxLength": 100,
+      "title": "Token"
+     }
+    },
+    "type": "object",
+    "required": [
+     "token"
+    ],
+    "title": "TokenIn"
+   },
+   "TokenPair": {
+    "properties": {
+     "access_token": {
+      "type": "string",
+      "title": "Access Token"
+     },
+     "refresh_token": {
+      "type": "string",
+      "title": "Refresh Token"
+     },
+     "token_type": {
+      "type": "string",
+      "title": "Token Type",
+      "default": "bearer"
+     },
+     "expires_in": {
+      "type": "integer",
+      "title": "Expires In",
+      "description": "Access token lifetime in seconds"
+     }
+    },
+    "type": "object",
+    "required": [
+     "access_token",
+     "refresh_token",
+     "expires_in"
+    ],
+    "title": "TokenPair"
+   },
+   "TrackInfo": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "const": "audius",
+      "title": "Provider"
+     },
+     "external_id": {
+      "type": "string",
+      "title": "External Id"
+     },
+     "title": {
+      "type": "string",
+      "title": "Title"
+     },
+     "artist": {
+      "type": "string",
+      "title": "Artist"
+     },
+     "duration": {
+      "type": "integer",
+      "minimum": 0.0,
+      "title": "Duration",
+      "description": "Duration in seconds"
+     },
+     "artwork_url": {
+      "anyOf": [
+       {
+        "type": "string"
+       },
+       {
+        "type": "null"
+       }
+      ],
+      "title": "Artwork Url"
+     }
+    },
+    "type": "object",
+    "required": [
+     "provider",
+     "external_id",
+     "title",
+     "artist",
+     "duration"
+    ],
+    "title": "TrackInfo",
+    "description": "A track in our own format, independent of any music provider."
+   },
+   "TrackRefIn": {
+    "properties": {
+     "provider": {
+      "type": "string",
+      "const": "audius",
+      "title": "Provider",
+      "default": "audius"
+     },
+     "external_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9]{1,32}$",
+      "title": "External Id"
+     }
+    },
+    "type": "object",
+    "required": [
+     "external_id"
+    ],
+    "title": "TrackRefIn",
+    "description": "What a client sends to add a track. Title, artist, etc. are fetched by the\nserver from the provider: a client can't inject fake metadata."
+   },
+   "UserSummary": {
+    "properties": {
+     "id": {
+      "type": "string",
+      "format": "uuid",
+      "title": "Id"
+     },
+     "display_name": {
+      "type": "string",
+      "title": "Display Name"
+     }
+    },
+    "type": "object",
+    "required": [
+     "id",
+     "display_name"
+    ],
+    "title": "UserSummary"
+   },
+   "ValidationError": {
+    "properties": {
+     "loc": {
+      "items": {
+       "anyOf": [
+        {
+         "type": "string"
+        },
+        {
+         "type": "integer"
+        }
+       ]
+      },
+      "type": "array",
+      "title": "Location"
+     },
+     "msg": {
+      "type": "string",
+      "title": "Message"
+     },
+     "type": {
+      "type": "string",
+      "title": "Error Type"
+     },
+     "input": {
+      "title": "Input"
+     },
+     "ctx": {
+      "type": "object",
+      "title": "Context"
+     }
+    },
+    "type": "object",
+    "required": [
+     "loc",
+     "msg",
+     "type"
+    ],
+    "title": "ValidationError"
+   },
+   "Visibility": {
+    "type": "string",
+    "enum": [
+     "public",
+     "private"
+    ],
+    "title": "Visibility"
+   }
+  },
+  "securitySchemes": {
+   "HTTPBearer": {
+    "type": "http",
+    "scheme": "bearer"
+   }
+  }
+ }
+}

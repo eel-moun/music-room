@@ -3,11 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, Path, Query
 from pydantic import BaseModel
 
+from app.auth.deps import current_user
 from app.core.config import get_settings
 from app.music.audius import AudiusProvider, audius_client
 from app.music.provider import MusicProvider, TrackInfo
 
-router = APIRouter(prefix="/music", tags=["music"])
+# Logged-in users only: the provider quota is ours, not a public proxy.
+router = APIRouter(prefix="/music", tags=["music"], dependencies=[Depends(current_user)])
 
 
 def get_music_provider() -> MusicProvider:
