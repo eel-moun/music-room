@@ -6,14 +6,19 @@ WORKDIR /app
 ENV UV_COMPILE_BYTECODE=1 \
     UV_LINK_MODE=copy \
     UV_PROJECT_ENVIRONMENT=/opt/venv \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    PROMETHEUS_MULTIPROC_DIR=/tmp/prometheus
 
 # Install dependencies first (cached layer), then the app code
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-install-project
 
 COPY . .
-RUN uv sync --frozen
+RUN uv sync --frozen && mkdir -p "$PROMETHEUS_MULTIPROC_DIR"
+
+# Not root: a compromised process can't touch the image or the venv.
+RUN useradd --system --uid 10001 app && chown -R app /tmp/prometheus
+USER app
 
 EXPOSE 8000
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+CMD ["./start.sh"]

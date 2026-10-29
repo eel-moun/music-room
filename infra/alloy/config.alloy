@@ -1,0 +1,57 @@
+// Collect the logs of this Compose project's containers and ship them to Loki.
+
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+// Turn Docker metadata into Loki labels, and keep only our project's containers.
+discovery.relabel "musicroom" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    regex         = "musicroom.*"
+    action        = "keep"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+    target_label  = "service"
+  }
+
+  rule {
+    source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+    target_label  = "project"
+  }
+}
+
+loki.source.docker "containers" {
+  host       = "unix:///var/run/docker.sock"
+  targets    = discovery.relabel.musicroom.output
+  labels     = {"source" = "docker"}
+  forward_to = [loki.process.api.receiver]
+}
+
+// The API logs one JSON object per line: promote a few low-cardinality fields to
+// labels (level, event). Everything else stays in the line, queried with `| json`.
+loki.process "api" {
+  forward_to = [loki.write.local.receiver]
+
+  stage.match {
+    selector = "{service=\"api\"}"
+
+    stage.json {
+      expressions = {level = "level", event = "event"}
+    }
+
+    stage.labels {
+      values = {level = "", event = ""}
+    }
+  }
+}
+
+loki.write "local" {
+  endpoint {
+    url = "http://loki:3100/loki/api/v1/push"
+  }
+}

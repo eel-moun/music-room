@@ -1,0 +1,7 @@
+global:
+  scrape_interval: 5s # short on purpose: load tests last minutes, not days
+
+scrape_configs:
+  - job_name: musicroom-api
+    static_configs:
+      - targets: ["api:8000"] # /metrics aggregates every uvicorn worker

@@ -9,6 +9,10 @@ services:
     # --reload watches the mounted code. Uvicorn can't combine --reload with --workers,
     # so dev runs 1 worker. Cross-worker realtime is tested with the prod file (2 workers).
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    # The image runs as a non-root user (prod). In dev the code is mounted from the host,
+    # and files the container writes (migrations, caches) must stay editable: run as root,
+    # which rootless Docker maps to your own host user.
+    user: root
     ports:
       - "8000:8000" # all interfaces: the phone reaches it via the LAN IP
     volumes:
