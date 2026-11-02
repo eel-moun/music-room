@@ -1,9 +1,14 @@
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
-import { useColorScheme } from 'react-native';
+import { Alert, Platform, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/auth/AuthContext';
 import { DeviceAgent } from '@/player/DeviceAgent';
+
+// react-native-web's Alert.alert does nothing: show errors with the browser's dialog.
+if (Platform.OS === 'web') {
+  Alert.alert = (title, message) => window.alert([title, message].filter(Boolean).join('\n\n'));
+}
 
 export default function RootLayout() {
   const scheme = useColorScheme();

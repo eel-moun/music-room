@@ -36,7 +36,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     predictiveBackGestureEnabled: false,
   },
   web: {
-    output: 'server',
+    output: 'single', // client-only SPA: audio and storage only exist in the browser
     favicon: './assets/images/favicon.png',
   },
   plugins: [

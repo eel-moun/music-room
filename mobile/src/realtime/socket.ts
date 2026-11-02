@@ -5,6 +5,7 @@ import { get } from '@/api/client';
 import { getApiUrl } from '@/lib/config';
 import { deviceHeaders } from '@/lib/device';
 import { load } from '@/lib/storage';
+import { Platform } from 'react-native';
 
 export type RoomEvent = { type: string; room: string; seq?: number; payload: any };
 type Handler = (event: RoomEvent) => void;
@@ -54,8 +55,11 @@ class Realtime {
     const token = await load('accessToken');
     if (!token || this.stopped) return;
     const url = getApiUrl().replace(/^http/, 'ws') + '/ws';
-    // React Native's WebSocket accepts headers (browsers don't): device info for the logs.
-    const ws = new (WebSocket as any)(url, null, { headers: deviceHeaders }) as WebSocket;
+    // React Native's WebSocket accepts headers (device info for the logs); browsers don't.
+    const ws =
+      Platform.OS === 'web'
+        ? new WebSocket(url)
+        : (new (WebSocket as any)(url, null, { headers: deviceHeaders }) as WebSocket);
     this.ws = ws;
 
     ws.onopen = () => {

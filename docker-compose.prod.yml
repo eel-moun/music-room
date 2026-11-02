@@ -21,6 +21,8 @@ services:
       WEB_WORKERS: ${WEB_WORKERS:-2}
       DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
       DB_MAX_OVERFLOW: ${DB_MAX_OVERFLOW:-10}
+      # Off unless set: CORS_ORIGINS=http://localhost:8081 make prod-up (web preview)
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
     ports:
       - "8000:8000"
     depends_on:

@@ -1,0 +1,7 @@
+#!/bin/sh
+# Reject commit messages that credit Claude (same rule as pre-push, caught earlier).
+PATTERN='co-authored-by:.*(claude|anthropic)|noreply@anthropic\.com|generated with \[?claude code'
+if grep -v '^#' "$1" | grep -qiE "$PATTERN"; then
+    echo "commit-msg: remove the Claude co-author/attribution line from the message." >&2
+    exit 1
+fi

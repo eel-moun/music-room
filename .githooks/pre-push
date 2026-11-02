@@ -1,0 +1,21 @@
+#!/bin/sh
+# Reject pushes containing commits co-authored by / attributed to Claude.
+PATTERN='co-authored-by:.*(claude|anthropic)|noreply@anthropic\.com|generated with \[?claude code'
+zero=0000000000000000000000000000000000000000
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ "$local_sha" = "$zero" ] && continue  # branch deletion
+    if [ "$remote_sha" = "$zero" ]; then
+        range=$(git rev-list "$local_sha" --not --remotes="$1")
+    else
+        range=$(git rev-list "$remote_sha..$local_sha")
+    fi
+    for c in $range; do
+        if git show -s --format='%an <%ae>%n%cn <%ce>%n%B' "$c" | grep -qiE "$PATTERN"; then
+            echo "pre-push: commit $(git log -1 --format='%h %s' "$c") mentions Claude as a co-author." >&2
+            echo "pre-push: remove the trailer (git rebase -i / git commit --amend) and push again." >&2
+            exit 1
+        fi
+    done
+done
+exit 0
