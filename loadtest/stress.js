@@ -1,5 +1,5 @@
 // Find the breaking point: arrival rate climbs until latency or errors give way.
-//   make loadtest-tokens n=500 && make loadtest s=stress
+//   make loadtest s=stress n=500   (issues fresh tokens first)
 // Each iteration is one request; the stop conditions below abort the test when it breaks.
 import { setupWorld } from './lib.js';
 import { controller, editor, voter } from './scenarios.js';

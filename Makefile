@@ -2,7 +2,7 @@
 COMPOSE := docker compose
 API := $(COMPOSE) exec api
 
-.PHONY: help env up down restart logs ps migrate revision test lint format shell psql redis-cli prod-up prod-down prod-logs obs-up seed check-realtime loadtest-tokens loadtest mobile-api mobile-check mobile-install mobile
+.PHONY: help env up up-tunnel links tunnel-url down restart logs ps migrate revision test lint format shell psql redis-cli prod-up prod-down prod-logs obs-up fclean seed prod-seed seed-loadtest check-realtime loadtest-tokens loadtest mobile-api mobile-check mobile-install mobile
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
@@ -10,11 +10,28 @@ help: ## Show available targets
 env: ## Create .env from .env.example if missing
 	@test -f .env || (cp .env.example .env && echo "Created .env — fill in the secrets")
 
-up: env ## Build and start all services
-	$(COMPOSE) up -d --build
+# Compose file sets for infra/tunnel/tunnel.sh (docker compose reads COMPOSE_FILE).
+DEV_FILES := COMPOSE_FILE=docker-compose.yml:docker-compose.tunnel.yml
+PROD_FILES := COMPOSE_FILE=docker-compose.prod.yml:docker-compose.observability.yml:docker-compose.tunnel.yml
+TUNNEL := sh infra/tunnel/tunnel.sh
 
-down: ## Stop all services
-	$(COMPOSE) down
+up: env ## Build and start the dev stack, print the links
+	$(COMPOSE) up -d --build
+	@$(DEV_FILES) $(TUNNEL) links
+
+up-tunnel: env ## Dev stack + public tunnels (API + Expo Go) for the phone, print the links
+	$(COMPOSE) up -d --build
+	$(DEV_FILES) $(TUNNEL) start
+	@$(DEV_FILES) $(TUNNEL) links
+
+links: ## Print the links of the running stack (Swagger, Grafana, phone API, Expo Go)
+	@if [ -n "$$(docker compose -f docker-compose.prod.yml ps -q api 2>/dev/null)" ]; \
+	then $(PROD_FILES) $(TUNNEL) links; else $(DEV_FILES) $(TUNNEL) links; fi
+
+tunnel-url: links ## Same as links
+
+down: ## Stop the dev stack (and its tunnels)
+	$(DEV_FILES) $(COMPOSE) down --remove-orphans
 
 restart: ## Restart the API
 	$(COMPOSE) restart api
@@ -56,20 +73,31 @@ OBS := $(PROD) -f docker-compose.observability.yml
 # Alloy reads container logs from the Docker socket (rootless Docker: /run/user/<uid>/docker.sock).
 export DOCKER_SOCK ?= $(shell docker context inspect --format '{{.Endpoints.docker.Host}}' 2>/dev/null | sed 's|unix://||')
 
-prod-up: ## Start the production-like stack (needs .env.prod)
+prod-up: ## Prod stack + observability + phone tunnels (API + Expo Go), print the links (needs .env.prod)
 	@test -f .env.prod || (echo "Missing .env.prod — copy .env.example and set real secrets" && exit 1)
-	$(PROD) up -d --build
+	$(OBS) up -d --build
+	$(PROD_FILES) $(TUNNEL) start
+	@$(PROD_FILES) $(TUNNEL) links
 
-prod-down: ## Stop the production-like stack (and observability, if running)
-	$(OBS) down
+prod-down: ## Stop the prod stack, observability and tunnels
+	$(PROD_FILES) $(COMPOSE) down --remove-orphans
 
-obs-up: prod-up ## Prod stack + Loki/Alloy/Prometheus/Grafana (http://localhost:3000)
-	$(OBS) up -d
+obs-up: prod-up ## Same as prod-up (kept for old habits)
 
-seed: ## Create verified load-test users in the prod stack: make seed n=500
+fclean: ## Stop every stack and DELETE all volumes: dev/test/prod databases, Redis, logs, metrics, Grafana
+	$(DEV_FILES) $(COMPOSE) down -v --remove-orphans
+	$(PROD_FILES) $(COMPOSE) down -v --remove-orphans
+
+seed: migrate ## Create test accounts (alice/bob/carol/dave/eve@example.com) in the dev stack
+	$(API) uv run python -m scripts.seed_accounts
+
+prod-seed: ## Same test accounts in the prod stack
+	$(PROD) exec api python -m scripts.seed_accounts
+
+seed-loadtest: ## Create verified load-test users in the prod stack: make seed-loadtest n=500
 	$(PROD) exec api python -m scripts.seed --users $(or $(n),200)
 
-check-realtime: ## End-to-end realtime check across the 2 prod workers (needs make seed)
+check-realtime: ## End-to-end realtime check across the 2 prod workers (needs make seed-loadtest)
 	cd backend && uv run python scripts/check_realtime.py
 
 loadtest-tokens: ## Seed users and write their access tokens for k6 (valid 15 min)
@@ -78,7 +106,8 @@ loadtest-tokens: ## Seed users and write their access tokens for k6 (valid 15 mi
 # --user root: rootless Docker maps it to you, so k6 can write loadtest/results.
 K6 := docker run --rm -i --user root --network musicroom-prod_default -v $(CURDIR)/loadtest:/scripts grafana/k6:1.8.2
 
-loadtest: ## Run a k6 scenario on the prod stack: make loadtest s=stress args="-e PEAK=3000"
+# Fresh tokens on every run: they expire after 15 min, and fclean wipes the users.
+loadtest: loadtest-tokens ## Run a k6 scenario on the prod stack (new tokens first): make loadtest s=stress n=500 args="-e PEAK=3000"
 	$(K6) run -e API=http://api:8000 $(args) --summary-export /scripts/results/$(or $(s),mixed).json /scripts/$(or $(s),mixed).js
 
 prod-logs: ## Follow production API logs

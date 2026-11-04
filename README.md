@@ -42,14 +42,19 @@ open http://localhost:8000/docs     # Swagger: every endpoint, inputs and output
 open http://localhost:8025          # mailpit: the emails the API sends
 ```
 
-Then register in Swagger (`POST /auth/register`), open the verification link from mailpit, log in, and click **Authorize** with the `access_token`. App endpoints require the headers `X-Platform`, `X-Device` and `X-App-Version` (Swagger shows the fields).
+Test accounts: `make seed` creates alice, bob, carol, dave and eve `@example.com` (password `musicroom-test`), already verified. Alice is friends with Bob and Carol, Dave has a pending request to Alice, and Eve is a stranger to everyone.
+
+Or register in Swagger (`POST /auth/register`), open the verification link from mailpit, log in, and click **Authorize** with the `access_token`. App endpoints require the headers `X-Platform`, `X-Device` and `X-App-Version` (Swagger shows the fields).
 
 ### Production-like stack
 
 ```bash
 cp .env.example .env.prod   # real secrets: JWT_SECRET=$(openssl rand -hex 32), real SMTP
-make prod-up                # 2 workers, non-root image, migrations at startup, no DB/Redis ports
-make obs-up                 # + Loki, Alloy, Prometheus, Grafana on http://localhost:3000
+make prod-up                # 2 workers, non-root image, migrations at startup, no DB/Redis ports,
+                            # + Loki, Alloy, Prometheus, Grafana on http://localhost:3000 (kept forever)
+                            # + public tunnels: API and Expo Go link for the phone (make links)
+make prod-seed              # test accounts (see above)
+make fclean                 # stop every stack, delete ALL volumes (databases, logs, metrics)
 ```
 
 ## Mobile app

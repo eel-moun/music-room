@@ -1,0 +1,34 @@
+# The image's bundled single-process config (grafana/loki:3.7.8, /etc/loki/local-config.yaml),
+# plus: no usage reporting to Grafana Labs.
+# Retention: none on purpose (school project): no compactor retention, so logs are kept
+# forever in the lokidata volume. `make fclean` deletes them.
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /loki/chunks
+      rules_directory: /loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+# The bundled default sends anonymous usage stats to stats.grafana.org.
+analytics:
+  reporting_enabled: false

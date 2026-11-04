@@ -1,4 +1,4 @@
-# Observability, added on top of the prod stack (see `make obs-up`):
+# Observability, always started with the prod stack (`make prod-up`):
 #   API logs (JSON on stdout) → Alloy → Loki ┐
 #   API /metrics            → Prometheus    ├→ Grafana (http://localhost:3000)
 name: musicroom-prod
@@ -6,9 +6,10 @@ name: musicroom-prod
 services:
   loki:
     image: grafana/loki:3.7.8
-    # The image's bundled single-process config: local filesystem storage.
-    command: ["-config.file=/etc/loki/local-config.yaml"]
+    # Bundled single-process config + analytics off; logs kept forever (no retention).
+    command: ["-config.file=/etc/loki/config.yaml"]
     volumes:
+      - ./infra/loki/config.yaml:/etc/loki/config.yaml:ro
       - lokidata:/loki
     restart: unless-stopped
 
@@ -25,6 +26,12 @@ services:
 
   prometheus:
     image: prom/prometheus:v3.15.0
+    # The image's default args + retention. The default is 15d; Prometheus has no
+    # documented "forever", so 100y stands for it (school project). `make fclean` deletes it.
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=100y
     volumes:
       - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - promdata:/prometheus

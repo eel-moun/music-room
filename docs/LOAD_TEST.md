@@ -85,10 +85,9 @@ That is consistent with the platform: a single desktop-class server handles hund
 ## Reproduce
 
 ```bash
-make obs-up                                       # prod stack + Grafana on http://localhost:3000
-make loadtest-tokens n=500                        # 500 users + access tokens (valid 15 min)
-make loadtest s=mixed args="-e VUS=800 -e DURATION=90s"
-make loadtest s=stress args="-e PEAK=3000"
+make prod-up                                      # prod stack + Grafana on http://localhost:3000
+make loadtest s=mixed n=500 args="-e VUS=800 -e DURATION=90s"   # 500 users + fresh tokens first
+make loadtest s=stress n=500 args="-e PEAK=3000"
 WEB_WORKERS=8 DB_POOL_SIZE=5 DB_MAX_OVERFLOW=5 make prod-up   # 8 workers, 80 DB connections max
 ```
 

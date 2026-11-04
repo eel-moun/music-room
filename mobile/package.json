@@ -6,7 +6,6 @@
     "@expo/ui": "~58.0.25",
     "@react-native-google-signin/google-signin": "~16.1.5",
     "expo": "~58.0.21",
-    "expo-application": "~58.1.2",
     "expo-asset": "~58.0.19",
     "expo-audio": "~58.0.10",
     "expo-constants": "~58.0.14",

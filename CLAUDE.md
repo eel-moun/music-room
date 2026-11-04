@@ -74,9 +74,12 @@ Run `make help` for the full list. Main targets (run from the repo root; most ex
 - `make test` / `make lint` / `make format`: pytest, ruff check + format check, auto-format
 - `make psql` / `make redis-cli` / `make shell`: open a client inside the containers
 - `make prod-up` / `make prod-down` / `make prod-logs`: production-like stack from `docker-compose.prod.yml` (needs a gitignored `.env.prod`)
-- `make obs-up`: prod stack + Loki/Alloy/Prometheus/Grafana (Grafana on localhost:3000, dashboard "Music Room API")
-- `make seed n=200` / `make loadtest-tokens n=500` / `make loadtest s=mixed|stress args="-e VUS=800"`: load-test users, k6 (in Docker, on the prod network)
-- `make check-realtime`: end-to-end WebSocket check across the 2 prod workers (needs `make seed`)
+- `make prod-up` also starts Loki/Alloy/Prometheus/Grafana (`obs-up` is an alias; logs and metrics kept forever; Grafana on localhost:3000, dashboard "Music Room API") and the phone tunnels
+- `make up-tunnel` (dev) / `make prod-up`: Cloudflare Quick Tunnels (`docker-compose.tunnel.yml`, `infra/tunnel/tunnel.sh`) for the API + Expo Go via a Dockerised Metro; `make links` prints every URL (local + public, new on every tunnel start)
+- `make seed` / `make prod-seed`: test accounts alice/bob/carol/dave/eve@example.com (password `musicroom-test`) in dev / prod
+- `make fclean`: stop every stack and delete all volumes (all DBs, Redis, logs, metrics)
+- `make seed-loadtest n=200` / `make loadtest s=mixed|stress n=500 args="-e VUS=800"` (issues fresh tokens first, like `make loadtest-tokens`): load-test users, k6 (in Docker, on the prod network)
+- `make check-realtime`: end-to-end WebSocket check across the 2 prod workers (needs `make seed-loadtest`)
 - `make mobile-api`: regenerate `mobile/src/api/schema.d.ts` from the backend OpenAPI (after any schema change)
 - `make mobile-check`: tsc + expo lint in Docker (host Node is v12, too old); `make mobile-install` / `make mobile`: local Expo (needs Node 24)
 

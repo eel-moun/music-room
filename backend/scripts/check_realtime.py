@@ -1,6 +1,6 @@
 """End-to-end check of realtime across uvicorn workers, with the real protocol.
 
-Needs seeded users (python -m scripts.seed) and the 2-worker stack (make prod-up):
+Needs seeded users (make seed-loadtest) and the 2-worker stack (make prod-up):
     uv run python scripts/check_realtime.py --api http://localhost:8000
 
 1. two users log in over REST, one creates an event

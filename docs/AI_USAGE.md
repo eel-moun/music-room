@@ -32,3 +32,8 @@ The subject requires transparency on what was generated with AI. Every Claude-ge
 | 2026-10-29 | `docs/SECURITY.md` (🧠, delegated), ADR-004 to 008 drafts (🧠, to rewrite) | `docs/` | ☐ |
 | 2026-10-29 | **Mobile app**: Expo project, API client with refresh, realtime client, device agent, host player, all screens, app config | `mobile/` | ☐ |
 | 2026-10-29 | README files, CI jobs for migrations and the mobile app | `README.md`, `mobile/README.md`, `.github/workflows/ci.yml` | ☐ |
+| 2026-11-03 | Cloudflare Quick Tunnels for phone testing: `tunnel`, `metro`, `metro-tunnel` compose services (profile), `make up-tunnel` / `make tunnel-url` (Expo Go link) | `docker-compose.yml`, `Makefile` | ☐ |
+| 2026-11-03 | Observability always on with `prod-up`, Loki config (analytics off, no retention), Prometheus retention 100y, `make fclean`, test-account seed (`make seed` / `prod-seed`, `scripts/seed_accounts.py`), load-test seed renamed `seed-loadtest` | `Makefile`, `docker-compose.observability.yml`, `infra/loki/`, `backend/scripts/seed_accounts.py`, README, CLAUDE.md | ☐ |
+| 2026-11-03 | Tunnels moved to `docker-compose.tunnel.yml` + `infra/tunnel/tunnel.sh` (start / links), on in `prod-up`, `make links` | `docker-compose.tunnel.yml`, `infra/tunnel/`, `Makefile` | ☐ |
+| 2026-11-03 | `make loadtest` issues fresh tokens first (depends on `loadtest-tokens`) | `Makefile`, docs | ☐ |
+| 2026-11-03 | Expo Go fix: `X-App-Version` read from `expo-constants` instead of `expo-application` (native module missing in Expo Go), `expo-application` dependency removed | `mobile/src/lib/device.ts`, `mobile/package.json`, `mobile/package-lock.json` | ☐ |

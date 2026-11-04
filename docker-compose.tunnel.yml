@@ -1,0 +1,33 @@
+# Phone access from anywhere, added on top of the dev or the prod stack:
+#   make up-tunnel (dev)   make prod-up (prod: always on)
+# Cloudflare Quick Tunnels: no account, a random public *.trycloudflare.com URL on every
+# start. Started by infra/tunnel/tunnel.sh, which reads both URLs before starting Metro.
+
+services:
+  # Public HTTPS URL of the API.
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    command: ["tunnel", "--url", "http://api:8000"]
+    depends_on:
+      - api
+
+  # Expo dev server (Metro) in Docker: host Node is too old. Targets Expo Go
+  # (no expo-dev-client installed).
+  metro:
+    image: node:24-bookworm-slim
+    user: root # rootless Docker maps it to you: .expo/ cache stays editable
+    working_dir: /app
+    volumes:
+      - ./mobile:/app
+    # No CI=1: it disables Metro's watch mode (no live reload). Without a TTY, Expo CLI
+    # is non-interactive anyway.
+    environment:
+      # Value-less entries: passed through from the shell only when set there.
+      - EXPO_PACKAGER_PROXY_URL # public Metro URL baked into the manifest/QR link
+      - EXPO_PUBLIC_API_URL # default backend URL in the app (overrides mobile/.env)
+    command: ["npx", "expo", "start", "--go", "--port", "8081"]
+
+  # Public URL of Metro: the Expo Go link.
+  metro-tunnel:
+    image: cloudflare/cloudflared:2026.10.0
+    command: ["tunnel", "--url", "http://metro:8081"]

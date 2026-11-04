@@ -1,5 +1,5 @@
 // Steady load on the 3 services at once, with realtime listeners.
-//   make loadtest-tokens n=300 && make loadtest s=mixed
+//   make loadtest s=mixed n=300   (issues fresh tokens first)
 // Override the size with -e VUS=400 (split 55% voters, 25% editors, 10% controllers, 10% sockets).
 import { setupWorld } from './lib.js';
 export { voter, editor, controller, listener } from './scenarios.js';
