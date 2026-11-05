@@ -1,6 +1,6 @@
 import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useRef, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 import { ApiError, del, get, post } from '@/api/client';
 import type { FriendOut, PlaylistDetail, Track, UserSummary } from '@/api/types';
@@ -8,14 +8,21 @@ import { formatDuration, TrackSearch } from '@/features/TrackSearch';
 import { alertError, message } from '@/lib/errors';
 import { useDeviceAgent } from '@/player/DeviceAgent';
 import { useRoom } from '@/realtime/useRoom';
-import { Body, Button, Card, ErrorText, Label, ListItem, Loading, Row, Screen } from '@/ui/kit';
+import { Body, Button, Card, ErrorText, Input, Label, ListItem, Loading, Row, Screen } from '@/ui/kit';
 
 export default function PlaylistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { deviceId } = useDeviceAgent();
+  const { deviceId, state } = useDeviceAgent();
   const [playlist, setPlaylist] = useState<PlaylistDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
   const latest = useRef<PlaylistDetail | null>(null);
+
+  const sendCommand = (cmd: string, extra: Record<string, unknown> = {}) => {
+    if (!deviceId) return;
+    post(`/devices/${deviceId}/commands`, { command: cmd, ...extra }).catch(alertError);
+  };
+
+  const isCurrentPlaylist = state.playlist_id === playlist?.id;
 
   const show = useCallback((p: PlaylistDetail) => {
     latest.current = p;
@@ -37,6 +44,14 @@ export default function PlaylistScreen() {
     }, [load]),
   );
 
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/playlists');
+    }
+  };
+
   useRoom(`playlist:${id}`, (msg) => {
     if (msg.type === 'playlist.updated') {
       // Someone (maybe us) changed it: adopt the server's state and version.
@@ -44,7 +59,7 @@ export default function PlaylistScreen() {
       if (current) show({ ...current, ...msg.payload, can_edit: current.can_edit });
     } else if (msg.type === 'playlist.deleted' || msg.type === 'access_revoked') {
       Alert.alert('This playlist is no longer available');
-      router.back();
+      goBack();
     } else load();
   });
 
@@ -103,43 +118,104 @@ export default function PlaylistScreen() {
       (p) => !p.tracks.some((t) => t.external_id === track.external_id),
     );
 
-  if (!playlist) return error ? <ErrorText error={error} /> : <Loading />;
+  if (!playlist) {
+    return (
+      <Screen onRefresh={load}>
+        <Stack.Screen
+          options={{
+            title: 'Playlist',
+            headerLeft: Platform.OS === 'web' ? () => <Button title="← Back" small kind="secondary" onPress={goBack} /> : undefined,
+          }}
+        />
+        {error ? (
+          <Card>
+            <ErrorText error={error} />
+            <Button title="← Back to playlists" kind="secondary" onPress={goBack} />
+          </Card>
+        ) : (
+          <Loading />
+        )}
+      </Screen>
+    );
+  }
 
   return (
     <Screen onRefresh={load}>
-      <Stack.Screen options={{ title: playlist.name }} />
+      <Stack.Screen
+        options={{
+          title: playlist.name,
+          headerLeft: Platform.OS === 'web' ? () => <Button title="← Back" small kind="secondary" onPress={goBack} /> : undefined,
+        }}
+      />
       <Body muted>
         by {playlist.owner.display_name} · {playlist.visibility} · {playlist.can_edit ? 'you can edit' : 'read only'} · v
         {playlist.version}
       </Body>
       {playlist.description ? <Body>{playlist.description}</Body> : null}
       {deviceId && playlist.tracks.length ? (
-        <Button
-          title="Play on this phone"
-          kind="secondary"
-          onPress={() =>
-            post(`/devices/${deviceId}/commands`, { command: 'play_playlist', playlist_id: playlist.id }).catch(alertError)
-          }
-        />
+        isCurrentPlaylist && state.track ? (
+          <Card>
+            <Label>Now Playing</Label>
+            <Body>{state.is_playing ? '▶' : '❚❚'} {state.track.title} · {state.track.artist}</Body>
+            <Row>
+              <Button title="⏮ Prev" small kind="secondary" onPress={() => sendCommand('previous')} />
+              <Button
+                title={state.is_playing ? '❚❚ Pause' : '▶ Play'}
+                small
+                kind={state.is_playing ? 'secondary' : 'primary'}
+                onPress={() => sendCommand(state.is_playing ? 'pause' : 'play')}
+              />
+              <Button title="⏭ Next" small kind="secondary" onPress={() => sendCommand('next')} />
+            </Row>
+          </Card>
+        ) : (
+          <Button
+            title="▶ Play playlist"
+            kind="primary"
+            onPress={() => sendCommand('play_playlist', { playlist_id: playlist.id })}
+          />
+        )
       ) : null}
 
       <Label>{playlist.tracks.length} tracks</Label>
-      {playlist.tracks.map((t, index) => (
-        <ListItem
-          key={t.id}
-          title={`${index + 1}. ${t.title}`}
-          subtitle={`${t.artist} · ${formatDuration(t.duration)}`}
-          right={
-            playlist.can_edit ? (
-              <Row gap={4}>
-                <Button title="↑" small kind="secondary" disabled={index === 0} onPress={() => move(index, -1)} />
-                <Button title="↓" small kind="secondary" disabled={index === playlist.tracks.length - 1} onPress={() => move(index, 1)} />
-                <Button title="✕" small kind="danger" onPress={() => remove(t.id)} />
-              </Row>
-            ) : undefined
-          }
-        />
-      ))}
+      {playlist.tracks.map((t, index) => {
+        const isTrackPlaying = state.track?.external_id === t.external_id && state.is_playing;
+        return (
+          <ListItem
+            key={t.id}
+            title={`${index + 1}. ${t.title}`}
+            subtitle={`${t.artist} · ${formatDuration(t.duration)}`}
+            left={
+              deviceId ? (
+                <Button
+                  title={isTrackPlaying ? '❚❚' : '▶'}
+                  small
+                  kind={isTrackPlaying ? 'primary' : 'secondary'}
+                  onPress={() => {
+                    if (isTrackPlaying) {
+                      sendCommand('pause');
+                    } else {
+                      sendCommand('play_track', {
+                        track: { provider: t.provider, external_id: t.external_id },
+                        playlist_id: playlist.id,
+                      });
+                    }
+                  }}
+                />
+              ) : undefined
+            }
+            right={
+              playlist.can_edit ? (
+                <Row gap={4}>
+                  <Button title="↑" small kind="secondary" disabled={index === 0} onPress={() => move(index, -1)} />
+                  <Button title="↓" small kind="secondary" disabled={index === playlist.tracks.length - 1} onPress={() => move(index, 1)} />
+                  <Button title="✕" small kind="danger" onPress={() => remove(t.id)} />
+                </Row>
+              ) : undefined
+            }
+          />
+        );
+      })}
 
       {playlist.can_edit ? (
         <Card>
@@ -156,6 +232,9 @@ export default function PlaylistScreen() {
 function Members({ playlistId }: { playlistId: string }) {
   const [members, setMembers] = useState<UserSummary[]>([]);
   const [friends, setFriends] = useState<FriendOut[]>([]);
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<UserSummary[]>([]);
+  const [searching, setSearching] = useState(false);
 
   const load = useCallback(async () => {
     const [m, f] = await Promise.all([
@@ -172,31 +251,107 @@ function Members({ playlistId }: { playlistId: string }) {
     }, [load]),
   );
 
+  const search = async () => {
+    if (!query.trim()) return;
+    setSearching(true);
+    try {
+      const res = await get<UserSummary[]>(`/users?q=${encodeURIComponent(query.trim())}`);
+      setSearchResults(res);
+    } catch (e) {
+      alertError(e);
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const inviteUser = async (userId: string) => {
+    try {
+      await post(`/playlists/${playlistId}/members`, { user_id: userId });
+      await load();
+    } catch (e) {
+      alertError(e);
+    }
+  };
+
+  const removeUser = async (userId: string) => {
+    try {
+      await del(`/playlists/${playlistId}/members/${userId}`);
+      await load();
+    } catch (e) {
+      alertError(e);
+    }
+  };
+
   const memberIds = new Set(members.map((u) => u.id));
+
   return (
     <Card>
-      <Label>Invited editors</Label>
-      {friends.length === 0 ? <Body muted>Add friends to invite them.</Body> : null}
-      {friends.map(({ user }) => (
-        <Row key={user.id}>
-          <Body>{user.display_name}</Body>
-          {memberIds.has(user.id) ? (
-            <Button
-              title="Remove"
-              small
-              kind="danger"
-              onPress={() => del(`/playlists/${playlistId}/members/${user.id}`).then(load).catch(alertError)}
-            />
-          ) : (
-            <Button
-              title="Invite"
-              small
-              kind="secondary"
-              onPress={() => post(`/playlists/${playlistId}/members`, { user_id: user.id }).then(load).catch(alertError)}
-            />
-          )}
+      <Label>Invited editors ({members.length})</Label>
+      {members.length === 0 ? <Body muted>No one invited yet.</Body> : null}
+      {members.map((u) => (
+        <Row key={u.id}>
+          <Body>{u.display_name}</Body>
+          <Button
+            title="Remove"
+            small
+            kind="danger"
+            onPress={() => removeUser(u.id)}
+          />
         </Row>
       ))}
+
+      <Label>Invite editor by display name</Label>
+      <Row>
+        <Input
+          placeholder="Display name..."
+          value={query}
+          onChangeText={setQuery}
+          onSubmitEditing={search}
+        />
+        <Button title="Search" small onPress={search} busy={searching} />
+      </Row>
+
+      {searchResults.length > 0 ? (
+        <>
+          <Label>Search results</Label>
+          {searchResults.map((u) => (
+            <Row key={u.id}>
+              <Body>{u.display_name}</Body>
+              {memberIds.has(u.id) ? (
+                <Button title="Remove" small kind="danger" onPress={() => removeUser(u.id)} />
+              ) : (
+                <Button title="Invite" small kind="secondary" onPress={() => inviteUser(u.id)} />
+              )}
+            </Row>
+          ))}
+        </>
+      ) : null}
+
+      {friends.length > 0 ? (
+        <>
+          <Label>Quick invite friends</Label>
+          {friends.map(({ user }) => (
+            <Row key={user.id}>
+              <Body>{user.display_name}</Body>
+              {memberIds.has(user.id) ? (
+                <Button
+                  title="Remove"
+                  small
+                  kind="danger"
+                  onPress={() => removeUser(user.id)}
+                />
+              ) : (
+                <Button
+                  title="Invite"
+                  small
+                  kind="secondary"
+                  onPress={() => inviteUser(user.id)}
+                />
+              )}
+            </Row>
+          ))}
+        </>
+      ) : null}
     </Card>
   );
 }

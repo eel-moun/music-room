@@ -199,6 +199,9 @@ async def send_command(
     if body.command == "play_track":
         assert body.track is not None
         payload["track"] = (await provider.get_track(body.track.external_id)).model_dump()
+        if body.playlist_id is not None:
+            await load_playlist(session, body.playlist_id, user.id)
+            payload["playlist_id"] = str(body.playlist_id)
     elif body.command == "play_playlist":
         assert body.playlist_id is not None
         await load_playlist(session, body.playlist_id, user.id)  # the issuer must see it

@@ -208,6 +208,7 @@ async def remove_member(
     )
     await session.commit()
     await rooms.kick(f"playlist:{playlist_id}", user_id)
+    await rooms.publish(f"user:{user_id}", "playlist.uninvited", {"playlist_id": str(playlist_id)})
 
 
 # --- Tracks: every change carries the expected version -------------------------

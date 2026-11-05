@@ -51,9 +51,6 @@ export default function Login() {
       <Button title="Create an account" kind="secondary" onPress={() => router.push('/register')} />
       <Button title="Forgot password?" kind="secondary" onPress={() => router.push('/forgot')} />
       <Button title={`Server: ${getApiUrl()}`} kind="secondary" small onPress={() => router.push('/settings')} />
-      {!googleAvailable ? (
-        <Body muted>{"Google sign-in needs the development build (it isn't available in Expo Go)."}</Body>
-      ) : null}
     </Screen>
   );
 }

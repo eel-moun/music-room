@@ -3,10 +3,13 @@ import { useState } from 'react';
 import { Alert } from 'react-native';
 
 import { post } from '@/api/client';
+import { useAuth } from '@/auth/AuthContext';
+import { googleAvailable } from '@/auth/google';
 import { message } from '@/lib/errors';
 import { Button, Card, ErrorText, Input, Screen } from '@/ui/kit';
 
 export default function Register() {
+  const { loginWithGoogle } = useAuth();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +30,19 @@ export default function Register() {
     }
   };
 
+  const handleGoogle = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await loginWithGoogle();
+      router.replace('/events');
+    } catch (e) {
+      setError(message(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <Screen>
       <Card>
@@ -35,6 +51,9 @@ export default function Register() {
         <Input label="Password (8+ characters)" secureTextEntry value={password} onChangeText={setPassword} />
         <ErrorText error={error} />
         <Button title="Create account" busy={busy} onPress={submit} />
+        {googleAvailable ? (
+          <Button title="Continue with Google" kind="secondary" onPress={handleGoogle} />
+        ) : null}
       </Card>
     </Screen>
   );

@@ -30,6 +30,7 @@ export function Screen({
       <ScrollView
         contentContainerStyle={styles.screen}
         keyboardShouldPersistTaps="handled"
+        contentInsetAdjustmentBehavior="automatic"
         refreshControl={
           onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined
         }
@@ -169,11 +170,13 @@ export function ListItem({
   title,
   subtitle,
   onPress,
+  left,
   right,
 }: {
   title: string;
   subtitle?: string;
   onPress?: () => void;
+  left?: ReactNode;
   right?: ReactNode;
 }) {
   const c = useColors();
@@ -187,6 +190,7 @@ export function ListItem({
         pressed && { opacity: 0.7 },
       ]}
     >
+      {left}
       <View style={{ flex: 1, gap: 2 }}>
         <Text style={{ color: c.text, fontSize: 15, fontWeight: '500' }} numberOfLines={1}>
           {title}

@@ -3,10 +3,13 @@ import { useCallback, useState } from 'react';
 
 import { get } from '@/api/client';
 import type { Playlist } from '@/api/types';
+import { useAuth } from '@/auth/AuthContext';
 import { message } from '@/lib/errors';
+import { useRoom } from '@/realtime/useRoom';
 import { Body, Button, Choice, ErrorText, Input, ListItem, Screen } from '@/ui/kit';
 
 export default function Playlists() {
+  const { me } = useAuth();
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<'all' | 'mine'>('all');
@@ -32,6 +35,11 @@ export default function Playlists() {
       load();
     }, [load]),
   );
+
+  // Live updates: instantly shows playlists when invited as editor without manual refresh
+  useRoom(me ? `user:${me.id}` : null, (event) => {
+    if (event.type.startsWith('playlist.') || event.type === 'resync') load();
+  });
 
   return (
     <Screen refreshing={loading} onRefresh={load}>

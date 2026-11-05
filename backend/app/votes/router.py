@@ -160,6 +160,7 @@ async def uninvite(
     await session.commit()
     # Their open sockets lose the room on every worker.
     await rooms.kick(f"event:{event_id}", user_id)
+    await rooms.publish(f"user:{user_id}", "event.uninvited", {"event_id": str(event_id)})
 
 
 # --- Queue & votes -----------------------------------------------------------

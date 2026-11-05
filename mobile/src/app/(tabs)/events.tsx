@@ -3,10 +3,13 @@ import { useCallback, useState } from 'react';
 
 import { get } from '@/api/client';
 import type { EventOut } from '@/api/types';
+import { useAuth } from '@/auth/AuthContext';
 import { message } from '@/lib/errors';
+import { useRoom } from '@/realtime/useRoom';
 import { Body, Button, Choice, ErrorText, Input, ListItem, Screen } from '@/ui/kit';
 
 export default function Events() {
+  const { me } = useAuth();
   const [events, setEvents] = useState<EventOut[]>([]);
   const [query, setQuery] = useState('');
   const [scope, setScope] = useState<'all' | 'mine'>('all');
@@ -32,6 +35,11 @@ export default function Events() {
       load();
     }, [load]),
   );
+
+  // Live updates: instantly shows events when invited or uninvited without manual refresh
+  useRoom(me ? `user:${me.id}` : null, (event) => {
+    if (event.type.startsWith('event.') || event.type === 'resync') load();
+  });
 
   return (
     <Screen refreshing={loading} onRefresh={load}>

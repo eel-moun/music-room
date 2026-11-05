@@ -5,19 +5,52 @@ import { load, save } from './storage';
 
 // The PC's LAN IP, so a phone on the same Wi-Fi reaches the API. Overridable at
 // build time (EXPO_PUBLIC_API_URL in mobile/.env) and at runtime (Settings).
-export const DEFAULT_API_URL =
-  Platform.OS === 'web'
-    ? 'http://localhost:8000' // web preview runs on the PC itself
-    : (process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.10:8000');
+function defaultApiUrl(): string {
+  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost') {
+    return `http://${window.location.hostname}:8000`;
+  }
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+  return 'http://localhost:8000';
+}
+
+export const DEFAULT_API_URL = defaultApiUrl();
 
 let apiUrl = DEFAULT_API_URL;
 
 export async function loadApiUrl(): Promise<string> {
-  apiUrl = (await load('apiUrl')) ?? DEFAULT_API_URL;
+  const saved = await load('apiUrl');
+  if (saved) {
+    // If on web and not on localhost, but storage has localhost, auto-migrate to the actual host
+    if (
+      Platform.OS === 'web' &&
+      typeof window !== 'undefined' &&
+      window.location.hostname &&
+      window.location.hostname !== 'localhost' &&
+      saved.includes('localhost')
+    ) {
+      apiUrl = `http://${window.location.hostname}:8000`;
+      await save('apiUrl', apiUrl);
+      return apiUrl;
+    }
+    apiUrl = saved;
+    return apiUrl;
+  }
+  apiUrl = DEFAULT_API_URL;
   return apiUrl;
 }
 
 export function getApiUrl(): string {
+  if (
+    Platform.OS === 'web' &&
+    typeof window !== 'undefined' &&
+    window.location.hostname &&
+    window.location.hostname !== 'localhost' &&
+    apiUrl.includes('localhost')
+  ) {
+    return `http://${window.location.hostname}:8000`;
+  }
   return apiUrl;
 }
 

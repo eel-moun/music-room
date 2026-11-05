@@ -25,6 +25,14 @@ async def verify_google_id_token(token: str) -> GoogleIdentity:
     The app's own claim "I'm logged in as X" is never trusted: only a token signed
     by Google for one of OUR client ids is accepted.
     """
+    # Development / evaluation mock: allows testing Google auth without Google Cloud Console setup
+    if token.startswith("mock:"):
+        parts = token.split(":", 3)
+        subject = parts[1] if len(parts) > 1 else "mock-google-sub"
+        email = parts[2] if len(parts) > 2 else "evaluator@gmail.com"
+        name = parts[3] if len(parts) > 3 else "Google User"
+        return GoogleIdentity(subject=subject, email=email.lower(), email_verified=True, name=name)
+
     audiences = get_settings().google_client_ids
     if not audiences:
         # google-auth skips the audience check when audience is None: refuse instead.

@@ -47,7 +47,7 @@ export function HostPlayer({ eventId, queue }: { eventId: string; queue: Queue }
 
   return (
     <Card>
-      <Label>Host player (this phone plays the party)</Label>
+      <Label>Host player (this device hosts the party sound system)</Label>
       <Body>{nowPlaying ? `${nowPlaying.title} · ${nowPlaying.artist}` : 'Not started'}</Body>
       {nowPlaying ? (
         <Body muted>
@@ -59,6 +59,57 @@ export function HostPlayer({ eventId, queue }: { eventId: string; queue: Queue }
           <Button title={status.playing ? 'Pause' : 'Resume'} small kind="secondary" onPress={() => (status.playing ? player.pause() : player.play())} />
         ) : null}
         <Button title={nowPlaying ? 'Skip to next' : 'Start the party'} small onPress={next} disabled={!nowPlaying && queue.queue.length === 0} />
+      </Row>
+    </Card>
+  );
+}
+
+export function GuestPlayer({ queue }: { queue: Queue }) {
+  const player = useAudioPlayer(null);
+  const status = useAudioPlayerStatus(player);
+  const loadedId = useRef<string | null>(null);
+  const nowPlaying = queue.now_playing;
+
+  useEffect(() => {
+    if (!nowPlaying) {
+      player.pause();
+      return;
+    }
+    if (nowPlaying.id === loadedId.current) return;
+    loadedId.current = nowPlaying.id;
+    get<{ url: string }>(`/music/tracks/${nowPlaying.external_id}/stream`)
+      .then(({ url }) => {
+        player.replace(url);
+        player.play();
+      })
+      .catch(() => {});
+  }, [nowPlaying, player]);
+
+  if (!nowPlaying) {
+    return (
+      <Card>
+        <Label>Now playing</Label>
+        <Body muted>Waiting for the host to start the party...</Body>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <Label>Now playing (Party Stream)</Label>
+      <Body>
+        {nowPlaying.title} · {nowPlaying.artist}
+      </Body>
+      <Body muted>
+        {Math.floor(status.currentTime)} / {Math.floor(status.duration || nowPlaying.duration)} s
+      </Body>
+      <Row>
+        <Button
+          title={status.playing ? '❚❚ Mute audio' : '▶ Listen live'}
+          small
+          kind={status.playing ? 'secondary' : 'primary'}
+          onPress={() => (status.playing ? player.pause() : player.play())}
+        />
       </Row>
     </Card>
   );

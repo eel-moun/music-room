@@ -4,6 +4,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthProvider } from '@/auth/AuthContext';
 import { DeviceAgent } from '@/player/DeviceAgent';
+import { useColors } from '@/ui/theme';
 
 // react-native-web's Alert.alert does nothing: show errors with the browser's dialog.
 if (Platform.OS === 'web') {
@@ -12,12 +13,22 @@ if (Platform.OS === 'web') {
 
 export default function RootLayout() {
   const scheme = useColorScheme();
+  const c = useColors();
   return (
     <SafeAreaProvider>
       <ThemeProvider value={scheme === 'dark' ? DarkTheme : DefaultTheme}>
         <AuthProvider>
           <DeviceAgent>
-            <Stack screenOptions={{ headerBackButtonDisplayMode: 'minimal' }}>
+            <Stack
+              screenOptions={{
+                headerBackButtonDisplayMode: 'minimal',
+                headerStyle: { backgroundColor: c.bg },
+                headerTintColor: c.text,
+                headerTitleStyle: { color: c.text, fontWeight: '700' },
+                headerShadowVisible: false,
+                contentStyle: { backgroundColor: c.bg },
+              }}
+            >
               <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
               <Stack.Screen name="login" options={{ title: 'Music Room' }} />

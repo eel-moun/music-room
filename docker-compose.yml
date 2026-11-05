@@ -52,8 +52,8 @@ services:
   mailpit:
     image: axllent/mailpit:v1.32.0
     ports:
-      - "127.0.0.1:8025:8025" # web UI: http://localhost:8025
-      - "127.0.0.1:1025:1025" # SMTP
+      - "8025:8025" # web UI: http://localhost:8025 or LAN
+      - "1025:1025" # SMTP
 
 volumes:
   pgdata:

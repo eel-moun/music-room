@@ -1,6 +1,6 @@
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 import { get, post } from '@/api/client';
 import type { Profile } from '@/api/types';
@@ -12,16 +12,48 @@ export default function UserProfile() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/friends');
+    }
+  };
+
   useEffect(() => {
     get<Profile>(`/users/${id}`).then(setProfile).catch((e) => setError(message(e)));
   }, [id]);
 
-  if (!profile) return error ? <ErrorText error={error} /> : <Loading />;
+  if (!profile) {
+    return (
+      <Screen>
+        <Stack.Screen
+          options={{
+            title: 'Profile',
+            headerLeft: Platform.OS === 'web' ? () => <Button title="← Back" small kind="secondary" onPress={goBack} /> : undefined,
+          }}
+        />
+        {error ? (
+          <Card>
+            <ErrorText error={error} />
+            <Button title="← Back to friends" kind="secondary" onPress={goBack} />
+          </Card>
+        ) : (
+          <Loading />
+        )}
+      </Screen>
+    );
+  }
   const prefs = profile.music_preferences;
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: profile.display_name }} />
+      <Stack.Screen
+        options={{
+          title: profile.display_name,
+          headerLeft: Platform.OS === 'web' ? () => <Button title="← Back" small kind="secondary" onPress={goBack} /> : undefined,
+        }}
+      />
       <Card>
         <Label>About</Label>
         <Body>{profile.public_info.bio || 'No bio.'}</Body>

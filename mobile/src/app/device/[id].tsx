@@ -1,8 +1,8 @@
 // Remote control: send commands to a device (mine, or a friend's that delegated
 // control to me). Every command is checked by the server against the license.
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, Stack, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 
 import { get, post } from '@/api/client';
 import type { Command, DeviceState, Playlist, Track } from '@/api/types';
@@ -16,12 +16,20 @@ export default function RemoteControl() {
   const [state, setState] = useState<DeviceState | null>(null);
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
 
+  const goBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/(tabs)/devices');
+    }
+  };
+
   const load = useCallback(async () => {
     try {
       setState(await get<DeviceState | null>(`/devices/${id}/state`));
     } catch (e) {
       alertError(e);
-      router.back();
+      goBack();
     }
   }, [id]);
 
@@ -36,7 +44,7 @@ export default function RemoteControl() {
     if (msg.type === 'device.state') setState(msg.payload as DeviceState);
     else if (msg.type === 'access_revoked' || msg.type === 'device.deleted') {
       Alert.alert('Control removed', 'You can no longer control this device.');
-      router.back();
+      goBack();
     } else if (msg.type === 'resync') load();
   });
 
@@ -45,6 +53,12 @@ export default function RemoteControl() {
 
   return (
     <Screen onRefresh={load}>
+      <Stack.Screen
+        options={{
+          title: 'Remote control',
+          headerLeft: Platform.OS === 'web' ? () => <Button title="← Back" small kind="secondary" onPress={goBack} /> : undefined,
+        }}
+      />
       <Card>
         <Label>Now</Label>
         <Body>{state?.track ? `${state.is_playing ? '▶' : '❚❚'} ${state.track.title} · ${state.track.artist}` : 'Nothing playing (or device offline)'}</Body>

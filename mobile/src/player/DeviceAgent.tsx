@@ -32,11 +32,16 @@ async function ensureDevice(): Promise<string> {
 class Controller {
   state: DeviceState = IDLE;
   queue: Queue = { tracks: [], index: 0, playlistId: null };
+  advancing = false;
 
   constructor(
     private player: () => AudioPlayer,
     private onChange: (state: DeviceState) => void,
-  ) {}
+  ) {
+    try {
+      this.player().volume = (this.state.volume ?? 80) / 100;
+    } catch {}
+  }
 
   private update(patch: Partial<DeviceState>) {
     this.state = { ...this.state, ...patch };
@@ -46,16 +51,28 @@ class Controller {
   private async playTrack(track: Track) {
     // Signed, short-lived URL: fetched right before playing.
     const { url } = await get<{ url: string }>(`/music/tracks/${track.external_id}/stream`);
-    this.player().replace(url);
-    this.player().play();
+    const p = this.player();
+    p.replace(url);
+    p.volume = (this.state.volume ?? 80) / 100;
+    p.play();
     this.update({ is_playing: true, track, playlist_id: this.queue.playlistId, position_s: 0 });
   }
 
   async step(delta: number) {
-    const index = this.queue.index + delta;
-    if (index < 0 || index >= this.queue.tracks.length) return this.update({ is_playing: false });
-    this.queue.index = index;
-    await this.playTrack(this.queue.tracks[index]);
+    if (this.advancing) return;
+    this.advancing = true;
+    try {
+      const index = this.queue.index + delta;
+      if (index < 0 || index >= this.queue.tracks.length) {
+        return this.update({ is_playing: false });
+      }
+      this.queue.index = index;
+      await this.playTrack(this.queue.tracks[index]);
+    } finally {
+      setTimeout(() => {
+        this.advancing = false;
+      }, 600);
+    }
   }
 
   async apply(command: { command: string; [arg: string]: any }, currentTime: number) {
@@ -69,9 +86,22 @@ class Controller {
       case 'set_volume':
         this.player().volume = command.volume / 100;
         return this.update({ volume: command.volume });
-      case 'play_track':
+      case 'play_track': {
+        if (command.playlist_id) {
+          try {
+            const playlist = await get<PlaylistDetail>(`/playlists/${command.playlist_id}`);
+            const idx = playlist.tracks.findIndex((t) => t.external_id === command.track.external_id);
+            this.queue = {
+              tracks: playlist.tracks,
+              index: idx >= 0 ? idx : 0,
+              playlistId: playlist.id,
+            };
+            return this.playTrack(playlist.tracks[this.queue.index] ?? command.track);
+          } catch {}
+        }
         this.queue = { tracks: [command.track], index: 0, playlistId: null };
         return this.playTrack(command.track);
+      }
       case 'play_playlist': {
         const playlist = await get<PlaylistDetail>(`/playlists/${command.playlist_id}`);
         this.queue = { tracks: playlist.tracks, index: -1, playlistId: playlist.id };
@@ -123,12 +153,17 @@ export function DeviceAgent({ children }: { children: ReactNode }) {
 
   const deviceId = me ? registered : null;
 
-  // Next track of a playlist when the current one ends.
+  // Next track of a playlist when the current one ends naturally.
   useEffect(() => {
-    if (status.didJustFinish && controller.current?.queue.tracks.length) {
+    if (
+      status.didJustFinish &&
+      !controller.current?.advancing &&
+      controller.current?.queue.tracks.length &&
+      status.currentTime > 1
+    ) {
       controller.current.step(1).catch(() => {});
     }
-  }, [status.didJustFinish]);
+  }, [status.didJustFinish, status.currentTime]);
 
   useRoom(deviceId ? `device:${deviceId}` : null, (event) => {
     if (event.type !== 'device.command') return;
